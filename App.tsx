@@ -526,9 +526,34 @@ export default function App() {
                             {/* Improved Rank Badge */}
                             {!task.completed && !isCompleting && (
                                 <div
-                                    className={`absolute -left-2 sm:-left-3 top-4 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full shadow-xl font-black text-xs sm:text-sm z-10 border-2 border-white ring-1 ${rankBadgeClass}`}
+                                    className="absolute left-0 top-0.5 -translate-x-1/2 -translate-y-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 transform z-10"
                                 >
-                                    {index + 1}
+                                    {isTop1 || isTop2 ? (
+                                        <div className="relative w-8 h-8 sm:w-9 sm:h-9">
+                                            {/* Ribbon tails */}
+                                            <div className="absolute left-1/2 bottom-[-6px] -translate-x-1/2 flex gap-[2px] pointer-events-none">
+                                                <div className={`${isTop1 ? 'bg-amber-400' : 'bg-slate-400'} w-2 h-3 rounded-sm rotate-[-8deg] shadow-[0_1px_2px_rgba(0,0,0,0.12)]`} />
+                                                <div className={`${isTop1 ? 'bg-amber-400' : 'bg-slate-400'} w-2 h-3 rounded-sm rotate-[8deg] shadow-[0_1px_2px_rgba(0,0,0,0.12)]`} />
+                                            </div>
+                                            {/* Medal */}
+                                            <div
+                                                className={`relative w-full h-full flex items-center justify-center rounded-full border-2 border-white ring-1 shadow-xl font-black text-sm sm:text-base ${
+                                                    isTop1
+                                                        ? 'bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500 text-amber-950 ring-amber-200 shadow-amber-500/30'
+                                                        : 'bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 text-slate-800 ring-slate-200 shadow-slate-400/30'
+                                                }`}
+                                            >
+                                                <div className="absolute inset-1 rounded-full border border-white/40" />
+                                                <span className="relative">{index + 1}</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            className={`w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full shadow-xl font-black text-xs sm:text-sm border-2 border-white ring-1 ${rankBadgeClass}`}
+                                        >
+                                            {index + 1}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
