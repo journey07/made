@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Plus, Trash2, CheckCircle2, Circle, Settings, BarChart2, Layout, Pencil, X, Command, ArrowUpRight, History, Layers, Clock, AlignLeft, Undo2 } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, Circle, Settings, BarChart2, Pencil, X, Command, ArrowUpRight, History, Layers, Clock, AlignLeft, Undo2 } from 'lucide-react';
 import { Task, AppConfig } from './types';
 import { calculateMadeSScore, formatScore, getDescription, getLabel, getRelativeDateLabel, DEFAULT_CONFIG } from './utils';
 import { SliderInput } from './components/SliderInput';
 import { SettingsPanel } from './components/SettingsPanel';
+import logo from './logo.png';
 
 const STORAGE_KEY = 'mades-planner-tasks';
 const CONFIG_KEY = 'mades-planner-config';
@@ -243,9 +244,7 @@ export default function App() {
       <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 supports-[backdrop-filter]:bg-white/60">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
-              <Layout size={18} strokeWidth={2.5} />
-            </div>
+            <img src={logo} alt="MADE Framework logo" className="w-9 h-9 rounded-lg shadow-lg shadow-indigo-500/20 object-cover" />
             <h1 
               className="text-lg font-bold tracking-tight text-slate-900"
               style={{ fontFamily: "'Playfair Display', 'Inter', sans-serif" }}
