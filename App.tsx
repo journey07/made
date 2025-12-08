@@ -244,7 +244,7 @@ export default function App() {
       <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 supports-[backdrop-filter]:bg-white/60">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="MADE Framework logo" className="w-9 h-9 rounded-lg shadow-lg shadow-indigo-500/20 object-cover" />
+            <img src={logo} alt="MADE Framework logo" className="w-9 h-9 rounded-lg shadow-lg shadow-black/20 object-cover" />
             <h1 
               className="text-lg font-bold tracking-tight text-slate-900"
               style={{ fontFamily: "'Playfair Display', 'Inter', sans-serif" }}
@@ -344,8 +344,8 @@ export default function App() {
                     <SliderInput 
                       label="Deadline" 
                       value={d} min={1.0} max={2.0} step={0.1} 
-                      accentColor="text-amber-500"
-                      textColor="text-amber-700"
+                      accentColor="text-red-500"
+                      textColor="text-red-700"
                       onChange={setD} 
                       subLabel={getDescription(parseFloat(d.toFixed(1)), config.criteria.d)}
                     />
@@ -354,8 +354,8 @@ export default function App() {
                       label="Effort" 
                       value={6 - e} 
                       min={1} max={5} step={1} 
-                      accentColor="text-red-500"
-                      textColor="text-red-700"
+                      accentColor="text-amber-500"
+                      textColor="text-amber-700"
                       onChange={(val) => setE(6 - val)} 
                       displayValue={e} // Show actual value (1-5)
                       subLabel={getDescription(e, config.criteria.e)}
@@ -560,8 +560,8 @@ export default function App() {
                                 }`}>
                                     <div style={{ width: `${(task.m / 10) * 100}%` }} className="bg-emerald-400/80" />
                                     <div style={{ width: `${(task.a / 10) * 100}%` }} className="bg-violet-400/80" />
-                                    <div style={{ width: `${((task.d - 1) / 1) * 100}%` }} className="bg-amber-400/80" />
-                                    <div style={{ width: `${(task.e / 5) * 100}%` }} className="bg-red-400/80" />
+                                    <div style={{ width: `${((task.d - 1) / 1) * 100}%` }} className="bg-red-400/80" />
+                                    <div style={{ width: `${(task.e / 5) * 100}%` }} className="bg-amber-400/80" />
                                 </div>
 
                                 {/* Expanded Details */}
@@ -579,12 +579,12 @@ export default function App() {
                                                 <span className="text-slate-400 max-w-[80px] truncate hidden sm:inline">{getLabel(task.a, config.criteria.a)}</span>
                                             </span>
                                             <span className="flex items-center gap-1.5 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                                <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
                                                 <span className="font-bold text-slate-700">D:{task.d.toFixed(1)}</span>
                                                 <span className="text-slate-400 max-w-[80px] truncate hidden sm:inline">{getLabel(task.d, config.criteria.d)}</span>
                                             </span>
                                             <span className="flex items-center gap-1.5 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                                                 <span className="font-bold text-slate-700">E:{task.e}</span>
                                                 <span className="text-slate-400 max-w-[80px] truncate hidden sm:inline">{getLabel(task.e, config.criteria.e)}</span>
                                             </span>

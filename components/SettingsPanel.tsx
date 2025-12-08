@@ -134,8 +134,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
                     <CriteriaCard title={`Money (x${localConfig.weights.m})`} color="text-emerald-600" items={localConfig.criteria.m} />
                     <CriteriaCard title={`Asset (x${localConfig.weights.a})`} color="text-violet-600" items={localConfig.criteria.a} />
-                    <CriteriaCard title="Deadline (Multiplier)" color="text-amber-600" items={localConfig.criteria.d} />
-                    <CriteriaCard title="Effort (Subtractor)" color="text-red-600" items={localConfig.criteria.e} />
+                    <CriteriaCard title="Deadline (Multiplier)" color="text-red-600" items={localConfig.criteria.d} />
+                    <CriteriaCard title="Effort (Subtractor)" color="text-amber-600" items={localConfig.criteria.e} />
                 </div>
             ) : (
                 <div className="max-w-4xl mx-auto space-y-8 pb-12">
@@ -185,7 +185,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                                         <div className={`w-2 h-2 rounded-full ${
                                             key === 'm' ? 'bg-emerald-500' : 
                                             key === 'a' ? 'bg-violet-500' : 
-                                            key === 'd' ? 'bg-amber-500' : 'bg-red-500'
+                                            key === 'd' ? 'bg-red-500' : 'bg-amber-500'
                                         }`} />
                                         {key === 'm' ? 'Money' : key === 'a' ? 'Asset' : key === 'd' ? 'Deadline' : 'Effort'}
                                     </h4>
