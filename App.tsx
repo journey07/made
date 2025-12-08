@@ -67,9 +67,11 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('queue');
   const [toast, setToast] = useState<ToastState>(null);
+  const [showSignature, setShowSignature] = useState(false);
   
   const formRef = useRef<HTMLDivElement>(null);
   const deletedTaskRef = useRef<Task | null>(null);
+  const signatureTimerRef = useRef<number | null>(null);
 
   // Persistence
   useEffect(() => {
@@ -96,6 +98,17 @@ export default function App() {
         if (title.trim()) {
            document.getElementById('mades-submit-btn')?.click();
         }
+        return;
+      }
+
+      // Easter egg: Shift + M shows a tiny signature badge
+      if (event.shiftKey && event.key.toLowerCase() === 'm') {
+        event.preventDefault();
+        setShowSignature(true);
+        if (signatureTimerRef.current) {
+          window.clearTimeout(signatureTimerRef.current);
+        }
+        signatureTimerRef.current = window.setTimeout(() => setShowSignature(false), 3000);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -247,12 +260,22 @@ export default function App() {
             <img src={logo} alt="MADE Framework logo" className="w-9 h-9 rounded-lg shadow-lg shadow-black/20 object-cover" />
             <h1 
               className="text-lg font-bold tracking-tight text-slate-900"
-              style={{ fontFamily: "'Playfair Display', 'Inter', sans-serif" }}
+              style={{ fontFamily: "'Tinos', 'Inter', serif" }}
             >
-              Plan with <span className="text-indigo-600">MADE</span> Framework <span className="italic">by Injeon</span>
+              <span className="text-slate-900 font-black">MADE</span> | Prioritize your time
             </h1>
           </div>
           
+          <div className="flex items-center gap-3">
+            <div
+              className={`hidden sm:flex items-center gap-1 px-3 py-1 rounded-full bg-slate-900 text-white text-xs font-semibold shadow-lg transition-all duration-300 ${
+                showSignature ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'
+              }`}
+              style={{ fontFamily: "'Tinos', 'Inter', serif" }}
+              aria-hidden={!showSignature}
+            >
+              by Injeon ✨
+            </div>
           <button 
                 onClick={() => setShowSettings(true)}
                 className="flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-bold transition-all duration-200 border bg-white border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50"
@@ -260,6 +283,7 @@ export default function App() {
                 <Settings size={18} />
                 <span>Settings</span>
             </button>
+        </div>
         </div>
       </nav>
 
@@ -271,12 +295,12 @@ export default function App() {
         onSave={handleConfigSave}
       />
 
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           
           {/* LEFT: Input Section */}
           <div className="lg:col-span-7 relative" ref={formRef}>
-            <div className={`bg-white rounded-[2rem] p-1 shadow-2xl transition-all duration-500 sticky top-24 ${
+            <div className={`bg-white rounded-[2rem] p-1 shadow-2xl transition-all duration-500 sticky top-4 ${
                 editingId 
                     ? 'shadow-indigo-500/20 border-2 border-indigo-500' 
                     : 'shadow-slate-200/50 border border-slate-100'
@@ -314,12 +338,12 @@ export default function App() {
                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1 flex items-center gap-1">
                             <AlignLeft size={10} /> Description <span className="text-slate-300 font-normal normal-case tracking-normal">(Optional)</span>
                          </label>
-                         <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Add details, context, or notes..."
-                            rows={2}
-                            className="w-full text-sm font-medium bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all duration-200 resize-none"
+                        <textarea
+                           value={description}
+                           onChange={(e) => setDescription(e.target.value)}
+                           placeholder="Add details, context, or notes..."
+                           rows={2}
+                           className="w-full h-[52px] text-sm font-medium bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all duration-200 resize-none"
                         />
                     </div>
                   </div>
