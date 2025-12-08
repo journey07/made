@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plan with MADE Framework</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              background: '#f8fafc', // Slate 50
+              surface: '#ffffff', // White
+              primary: '#2563eb', // Blue 600
+              primaryLight: '#eff6ff', // Blue 50
+              accent: '#4f46e5', // Indigo 600
+              money: '#059669', // Emerald 600
+              asset: '#7c3aed', // Violet 600
+              deadline: '#d97706', // Amber 600
+              effort: '#dc2626', // Red 600
+              textMain: '#0f172a', // Slate 900
+              textSub: '#64748b', // Slate 500
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8fafc;
+        color: #0f172a;
+      }
+      /* Custom Slider Styles - Resetting to defaults with Tailwind accents for better usability */
+      input[type=range] {
+        height: 6px;
+        border-radius: 9999px;
+      }
+      input[type=range]:focus {
+        outline: none; 
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
