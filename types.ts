@@ -9,6 +9,7 @@ export interface Task {
   score: number;
   completed: boolean;
   createdAt: number;
+  completedAt?: number;
 }
 
 export interface ReferenceItem {
@@ -22,6 +23,13 @@ export interface WeightConfig {
   a: number;
 }
 
+export interface DefaultValueConfig {
+  m: number;
+  a: number;
+  d: number;
+  e: number;
+}
+
 export interface CriteriaConfig {
   m: ReferenceItem[];
   a: ReferenceItem[];
@@ -32,6 +40,7 @@ export interface CriteriaConfig {
 export interface AppConfig {
   weights: WeightConfig;
   criteria: CriteriaConfig;
+  defaultValues: DefaultValueConfig;
 }
 
 export type SortOption = 'score' | 'created';

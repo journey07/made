@@ -113,5 +113,11 @@ export const DEFAULT_CONFIG: AppConfig = {
     a: DEFAULT_A_CRITERIA,
     d: DEFAULT_D_CRITERIA,
     e: DEFAULT_E_CRITERIA,
-  }
+  },
+  defaultValues: {
+    m: 5,
+    a: 4,
+    d: 1.5,
+    e: 3,
+  },
 };

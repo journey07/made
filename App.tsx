@@ -9,6 +9,24 @@ import logo from './logo.png';
 const STORAGE_KEY = 'mades-planner-tasks';
 const CONFIG_KEY = 'mades-planner-config';
 
+const sanitizeConfig = (rawConfig: any): AppConfig => {
+  const weights = {
+    ...DEFAULT_CONFIG.weights,
+    ...(rawConfig?.weights || {})
+  };
+  const criteria = {
+    m: rawConfig?.criteria?.m || DEFAULT_CONFIG.criteria.m,
+    a: rawConfig?.criteria?.a || DEFAULT_CONFIG.criteria.a,
+    d: rawConfig?.criteria?.d || DEFAULT_CONFIG.criteria.d,
+    e: rawConfig?.criteria?.e || DEFAULT_CONFIG.criteria.e,
+  };
+  const defaultValues = {
+    ...DEFAULT_CONFIG.defaultValues,
+    ...(rawConfig?.defaultValues || {})
+  };
+  return { weights, criteria, defaultValues };
+};
+
 const generateId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
 };
@@ -21,7 +39,7 @@ export default function App() {
   const [config, setConfig] = useState<AppConfig>(() => {
     try {
         const saved = localStorage.getItem(CONFIG_KEY);
-        return saved ? JSON.parse(saved) : DEFAULT_CONFIG;
+        return saved ? sanitizeConfig(JSON.parse(saved)) : DEFAULT_CONFIG;
     } catch (e) {
         return DEFAULT_CONFIG;
     }
@@ -42,7 +60,10 @@ export default function App() {
         e: typeof t.e === 'number' ? t.e : 3,
         score: typeof t.score === 'number' ? t.score : 0, 
         completed: !!t.completed,
-        createdAt: t.createdAt || Date.now()
+        createdAt: t.createdAt || Date.now(),
+        completedAt: typeof t.completedAt === 'number'
+          ? t.completedAt
+          : (t.completed ? (t.createdAt || Date.now()) : undefined)
       })) : [];
     } catch (e) {
       console.error("Failed to load tasks", e);
@@ -57,11 +78,10 @@ export default function App() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  // Default values: M=5, A=4, D=1.5, E=3
-  const [m, setM] = useState(5);
-  const [a, setA] = useState(4);
-  const [d, setD] = useState(1.5);
-  const [e, setE] = useState(3);
+  const [m, setM] = useState(() => config.defaultValues.m ?? DEFAULT_CONFIG.defaultValues.m);
+  const [a, setA] = useState(() => config.defaultValues.a ?? DEFAULT_CONFIG.defaultValues.a);
+  const [d, setD] = useState(() => config.defaultValues.d ?? DEFAULT_CONFIG.defaultValues.d);
+  const [e, setE] = useState(() => config.defaultValues.e ?? DEFAULT_CONFIG.defaultValues.e);
   
   // UI State
   const [showSettings, setShowSettings] = useState(false);
@@ -81,6 +101,16 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
   }, [config]);
+
+  // Sync form defaults when configuration changes and form is idle
+  useEffect(() => {
+    if (editingId) return;
+    if (title || description) return;
+    setM(config.defaultValues.m ?? DEFAULT_CONFIG.defaultValues.m);
+    setA(config.defaultValues.a ?? DEFAULT_CONFIG.defaultValues.a);
+    setD(config.defaultValues.d ?? DEFAULT_CONFIG.defaultValues.d);
+    setE(config.defaultValues.e ?? DEFAULT_CONFIG.defaultValues.e);
+  }, [config.defaultValues, editingId, title, description]);
 
   // Toast Timer
   useEffect(() => {
@@ -123,7 +153,7 @@ export default function App() {
   };
 
   const handleConfigSave = (newConfig: AppConfig) => {
-      setConfig(newConfig);
+      setConfig(sanitizeConfig(newConfig));
       showToast("Configuration saved successfully");
   };
 
@@ -153,6 +183,7 @@ export default function App() {
             score: currentScore,
             completed: false,
             createdAt: Date.now(),
+            completedAt: undefined,
         };
         setTasks(prev => [...prev, newTask]);
         showToast("Task added to queue");
@@ -179,13 +210,17 @@ export default function App() {
     resetForm();
   };
 
+  const getTaskTimestamp = (task: Task) => {
+    return task.completed ? (task.completedAt ?? task.createdAt) : task.createdAt;
+  };
+
   const resetForm = () => {
     setTitle('');
     setDescription('');
-    setM(5);
-    setA(4);
-    setD(1.5);
-    setE(3);
+    setM(config.defaultValues.m ?? DEFAULT_CONFIG.defaultValues.m);
+    setA(config.defaultValues.a ?? DEFAULT_CONFIG.defaultValues.a);
+    setD(config.defaultValues.d ?? DEFAULT_CONFIG.defaultValues.d);
+    setE(config.defaultValues.e ?? DEFAULT_CONFIG.defaultValues.e);
   };
 
   const toggleComplete = (id: string, currentStatus: boolean) => {
@@ -195,7 +230,14 @@ export default function App() {
       
       // Wait for animation
       setTimeout(() => {
-        setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+        setTasks(prev => prev.map(t => {
+          if (t.id !== id) return t;
+          return {
+            ...t,
+            completed: true,
+            completedAt: Date.now(),
+          };
+        }));
         setCompletingIds(prev => {
           const next = new Set(prev);
           next.delete(id);
@@ -204,7 +246,7 @@ export default function App() {
       }, 700);
     } else {
       // If un-completing (from history), do it instantly
-      setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: false, completedAt: undefined } : t));
     }
   };
 
@@ -245,7 +287,9 @@ export default function App() {
         : tasks.filter(t => t.completed);
 
     return list.sort((a, b) => {
-       if (activeTab === 'history') return b.createdAt - a.createdAt;
+       if (activeTab === 'history') {
+          return getTaskTimestamp(b) - getTaskTimestamp(a);
+       }
        return b.score - a.score;
     });
   }, [tasks, activeTab]);
@@ -488,8 +532,8 @@ export default function App() {
                   let showDateHeader = false;
                   if (activeTab === 'history') {
                     const prevTask = index > 0 ? sortedTasks[index - 1] : null;
-                    const prevDateLabel = prevTask ? getRelativeDateLabel(prevTask.createdAt) : '';
-                    const currentDateLabel = getRelativeDateLabel(task.createdAt);
+                    const prevDateLabel = prevTask ? getRelativeDateLabel(getTaskTimestamp(prevTask)) : '';
+                    const currentDateLabel = getRelativeDateLabel(getTaskTimestamp(task));
                     if (prevDateLabel !== currentDateLabel) {
                         showDateHeader = true;
                     }
@@ -505,6 +549,7 @@ export default function App() {
                     : 'bg-slate-900 text-white shadow-slate-900/20';
 
                   const isCompleting = completingIds.has(task.id);
+                  const displayTimestamp = getTaskTimestamp(task);
 
                   return (
                   <React.Fragment key={task.id}>
@@ -587,7 +632,7 @@ export default function App() {
                                         <div className="flex items-center gap-2 pt-1">
                                             <Clock size={12} className="text-slate-300" />
                                             <span className="text-[10px] font-medium text-slate-400">
-                                                {new Date(task.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                {new Date(displayTimestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                             </span>
                                         </div>
                                     </div>

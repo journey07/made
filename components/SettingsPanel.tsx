@@ -32,6 +32,24 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
     }
   };
 
+  const handleDefaultValueChange = (key: keyof AppConfig['defaultValues'], val: string) => {
+    const num = parseFloat(val);
+    if (isNaN(num)) return;
+    const limits: Record<keyof AppConfig['defaultValues'], { min: number; max: number; step: number }> = {
+      m: { min: 1, max: 10, step: 1 },
+      a: { min: 1, max: 10, step: 1 },
+      d: { min: 1.0, max: 2.0, step: 0.1 },
+      e: { min: 1, max: 5, step: 1 },
+    };
+    const { min, max, step } = limits[key];
+    const clamped = Math.min(max, Math.max(min, num));
+    const rounded = key === 'd' ? parseFloat(clamped.toFixed(1)) : Math.round(clamped / step) * step;
+    setLocalConfig(prev => ({
+      ...prev,
+      defaultValues: { ...prev.defaultValues, [key]: rounded }
+    }));
+  };
+
   const handleCriteriaChange = (category: keyof AppConfig['criteria'], index: number, field: keyof ReferenceItem, value: string) => {
     const newCriteria = [...localConfig.criteria[category]];
     newCriteria[index] = { ...newCriteria[index], [field]: value };
@@ -164,6 +182,64 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                                     value={localConfig.weights.a}
                                     onChange={(e) => handleWeightChange('a', e.target.value)}
                                     className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-mono font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Default MADE values */}
+                    <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold text-slate-900">Default MADE values</h3>
+                            <span className="text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-1 rounded">Used when adding tasks</span>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Money (1-10)</label>
+                                <input
+                                    type="number"
+                                    min={1}
+                                    max={10}
+                                    step={1}
+                                    value={localConfig.defaultValues.m}
+                                    onChange={(e) => handleDefaultValueChange('m', e.target.value)}
+                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Asset (1-10)</label>
+                                <input
+                                    type="number"
+                                    min={1}
+                                    max={10}
+                                    step={1}
+                                    value={localConfig.defaultValues.a}
+                                    onChange={(e) => handleDefaultValueChange('a', e.target.value)}
+                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Deadline (1.0-2.0)</label>
+                                <input
+                                    type="number"
+                                    min={1.0}
+                                    max={2.0}
+                                    step={0.1}
+                                    value={localConfig.defaultValues.d}
+                                    onChange={(e) => handleDefaultValueChange('d', e.target.value)}
+                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Effort (1-5)</label>
+                                <input
+                                    type="number"
+                                    min={1}
+                                    max={5}
+                                    step={1}
+                                    value={localConfig.defaultValues.e}
+                                    onChange={(e) => handleDefaultValueChange('e', e.target.value)}
+                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                                 />
                             </div>
                         </div>
