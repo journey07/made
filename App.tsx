@@ -386,8 +386,8 @@ export default function App() {
                            value={description}
                            onChange={(e) => setDescription(e.target.value)}
                            placeholder="Add details, context, or notes..."
-                           rows={2}
-                           className="w-full h-[52px] text-sm font-medium bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all duration-200 resize-none"
+                           rows={1}
+                           className="w-full h-[52px] text-lg font-medium bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all duration-200 resize-none overflow-hidden"
                         />
                     </div>
                   </div>
