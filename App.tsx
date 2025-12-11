@@ -555,7 +555,7 @@ export default function App() {
                   <React.Fragment key={task.id}>
                     {showDateHeader && (
                         <div className="pt-6 pb-2 px-2 flex items-center gap-4">
-                            <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest">{getRelativeDateLabel(task.createdAt)}</h4>
+                            <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest">{getRelativeDateLabel(getTaskTimestamp(task))}</h4>
                             <div className="h-px bg-slate-100 flex-grow"></div>
                         </div>
                     )}
