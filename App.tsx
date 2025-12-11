@@ -649,13 +649,40 @@ export default function App() {
                                 </div>
 
                                 {/* Task DNA Bar */}
-                                <div className={`w-full flex h-1.5 rounded-full overflow-hidden bg-slate-100 mt-4 transition-opacity ${
-                                    isCompleting ? 'opacity-20' : 'opacity-60 group-hover:opacity-100'
-                                }`}>
-                                    <div style={{ width: `${(task.m / 10) * 100}%` }} className="bg-emerald-400/80" />
-                                    <div style={{ width: `${(task.a / 10) * 100}%` }} className="bg-violet-400/80" />
-                                    <div style={{ width: `${((task.d - 1) / 1) * 100}%` }} className="bg-red-400/80" />
-                                    <div style={{ width: `${(task.e / 5) * 100}%` }} className="bg-amber-400/80" />
+                                <div className={`relative w-full mt-4 ${isCompleting ? 'opacity-20' : ''}`}>
+                                    {/* Score labels - shown on hover for completed tasks */}
+                                    {task.completed && (
+                                        <div className="absolute -top-3 left-0 w-full flex opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                            <div style={{ width: `${(task.m / 10) * 100}%` }} className="flex justify-center">
+                                                <span className="text-[9px] font-bold text-emerald-700 whitespace-nowrap">
+                                                    M:{task.m}
+                                                </span>
+                                            </div>
+                                            <div style={{ width: `${(task.a / 10) * 100}%` }} className="flex justify-center">
+                                                <span className="text-[9px] font-bold text-violet-700 whitespace-nowrap">
+                                                    A:{task.a}
+                                                </span>
+                                            </div>
+                                            <div style={{ width: `${((task.d - 1) / 1) * 100}%` }} className="flex justify-center">
+                                                <span className="text-[9px] font-bold text-red-700 whitespace-nowrap">
+                                                    D:{task.d.toFixed(1)}
+                                                </span>
+                                            </div>
+                                            <div style={{ width: `${(task.e / 5) * 100}%` }} className="flex justify-center">
+                                                <span className="text-[9px] font-bold text-amber-700 whitespace-nowrap">
+                                                    E:{task.e}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className={`w-full flex h-1.5 rounded-full overflow-hidden bg-slate-100 transition-opacity ${
+                                        isCompleting ? 'opacity-20' : task.completed ? 'opacity-60 group-hover:opacity-100' : 'opacity-60 group-hover:opacity-100'
+                                    }`}>
+                                        <div style={{ width: `${(task.m / 10) * 100}%` }} className={`bg-emerald-400/80 ${task.completed ? 'group-hover:bg-emerald-500' : ''} transition-colors duration-300`} />
+                                        <div style={{ width: `${(task.a / 10) * 100}%` }} className={`bg-violet-400/80 ${task.completed ? 'group-hover:bg-violet-500' : ''} transition-colors duration-300`} />
+                                        <div style={{ width: `${((task.d - 1) / 1) * 100}%` }} className={`bg-red-400/80 ${task.completed ? 'group-hover:bg-red-500' : ''} transition-colors duration-300`} />
+                                        <div style={{ width: `${(task.e / 5) * 100}%` }} className={`bg-amber-400/80 ${task.completed ? 'group-hover:bg-amber-500' : ''} transition-colors duration-300`} />
+                                    </div>
                                 </div>
 
                                 {/* Expanded Details */}
