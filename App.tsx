@@ -231,7 +231,10 @@ export default function App() {
 
   // 복구 코드로 데이터 복원
   const restoreFromCode = async (code: string) => {
-    if (!supabase) return;
+    if (!supabase) {
+      showToast('Supabase 설정이 필요합니다', 'info');
+      return;
+    }
     
     const cleanCode = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
     if (cleanCode.length !== 8) {
@@ -726,22 +729,31 @@ export default function App() {
                         )}
                       </div>
 
-                      <div className="flex items-center gap-4 pt-2">
-                        <button 
-                          onClick={() => toggleComplete(sortedTasks[0].id, false)}
-                          className="group flex items-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-xl font-bold text-xs hover:bg-indigo-600 transition-all shadow-md"
-                        >
-                          <CheckCircle2 size={18} />
-                          <span>Complete Task</span>
-                        </button>
+                    <div className="flex items-center gap-4 pt-2">
+                      <button 
+                        onClick={() => toggleComplete(sortedTasks[0].id, false)}
+                        className="group flex items-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-xl font-bold text-xs hover:bg-indigo-600 transition-all shadow-md"
+                      >
+                        <CheckCircle2 size={18} />
+                        <span>Complete Task</span>
+                      </button>
+                      <div className="flex items-center gap-2">
                         <button 
                           onClick={() => startEditing(sortedTasks[0])}
-                          className="flex items-center gap-1.5 text-zinc-400 hover:text-zinc-900 font-bold text-xs transition-all px-2 py-1"
+                          className="flex items-center gap-1.5 text-zinc-400 hover:text-zinc-900 font-bold text-xs transition-all px-3 py-2 rounded-lg hover:bg-zinc-50"
                         >
                           <Pencil size={14} />
                           <span>Edit</span>
                         </button>
+                        <button 
+                          onClick={() => deleteTask(sortedTasks[0].id)}
+                          className="flex items-center gap-1.5 text-zinc-400 hover:text-red-600 font-bold text-xs transition-all px-3 py-2 rounded-lg hover:bg-red-50"
+                        >
+                          <Trash2 size={14} />
+                          <span>Delete</span>
+                        </button>
                       </div>
+                    </div>
                     </div>
                   </div>
 
