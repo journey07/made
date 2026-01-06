@@ -700,7 +700,7 @@ export default function App() {
                 </div>
 
                 <div className="flex-1 relative">
-                  <div className="p-5 lg:p-8 pb-24 lg:pb-16 relative">
+                  <div className="p-5 lg:p-8 pb-20 lg:pb-16 relative">
                     <div className={`absolute top-4 lg:top-0 right-4 lg:right-0 p-0 lg:p-6 scale-90 lg:scale-100 transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 scale-50' : ''}`}>
                       <div className="bg-zinc-900 text-white px-3 lg:px-4 py-2 lg:py-3 rounded-xl flex flex-col items-center justify-center shadow-lg min-w-[60px] lg:min-w-0">
                         <span className="text-lg lg:text-xl font-black leading-none">{formatScore(sortedTasks[0].score)}</span>
@@ -764,22 +764,22 @@ export default function App() {
                       <div className="flex items-center gap-2">
                         <span className="text-[7px] lg:text-[9px] font-black text-emerald-500 uppercase tracking-widest">Money</span>
                         <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">{sortedTasks[0].m}</span>
-                        <span className="text-[8px] lg:text-[9px] font-bold text-zinc-400 hidden lg:inline">{getLabel(sortedTasks[0].m, config.criteria.m)}</span>
+                        <span className="text-[7.5px] lg:text-[9px] font-bold text-zinc-400 truncate">{getLabel(sortedTasks[0].m, config.criteria.m)}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-[7px] lg:text-[9px] font-black text-violet-500 uppercase tracking-widest">Asset</span>
                         <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">{sortedTasks[0].a}</span>
-                        <span className="text-[8px] lg:text-[9px] font-bold text-zinc-400 hidden lg:inline">{getLabel(sortedTasks[0].a, config.criteria.a)}</span>
+                        <span className="text-[7.5px] lg:text-[9px] font-bold text-zinc-400 truncate">{getLabel(sortedTasks[0].a, config.criteria.a)}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-[7px] lg:text-[9px] font-black text-red-500 uppercase tracking-widest">Deadline</span>
                         <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">x{sortedTasks[0].d.toFixed(1)}</span>
-                        <span className="text-[8px] lg:text-[9px] font-bold text-zinc-400 hidden lg:inline">{getLabel(sortedTasks[0].d, config.criteria.d)}</span>
+                        <span className="text-[7.5px] lg:text-[9px] font-bold text-zinc-400 truncate">{getLabel(sortedTasks[0].d, config.criteria.d)}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-[7px] lg:text-[9px] font-black text-amber-500 uppercase tracking-widest">Effort</span>
                         <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">-{sortedTasks[0].e}</span>
-                        <span className="text-[8px] lg:text-[9px] font-bold text-zinc-400 hidden lg:inline">{getLabel(sortedTasks[0].e, config.criteria.e)}</span>
+                        <span className="text-[7.5px] lg:text-[9px] font-bold text-zinc-400 truncate">{getLabel(sortedTasks[0].e, config.criteria.e)}</span>
                       </div>
                     </div>
                   </div>
