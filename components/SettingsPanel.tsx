@@ -15,7 +15,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
   const [activeTab, setActiveTab] = useState<'guide' | 'customize'>('guide');
   const [localConfig, setLocalConfig] = useState<AppConfig>(config);
 
-  // Sync local config when prop changes (if needed, though mostly modal usage)
   React.useEffect(() => {
     if (isOpen) {
         setLocalConfig(config);
@@ -78,12 +77,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
 
   const autoSortCriteria = (category: keyof AppConfig['criteria']) => {
     const newCriteria = [...localConfig.criteria[category]].sort((a, b) => {
-        // Extract first number from range string for sorting
         const getVal = (str: string) => {
             const match = str.match(/[\d.]+/);
             return match ? parseFloat(match[0]) : 0;
         };
-        // Sort descending (High values first usually)
         return getVal(b.range) - getVal(a.range);
     });
     setLocalConfig(prev => ({
@@ -106,20 +103,20 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden border border-slate-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/20 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden border border-zinc-200">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
-          <div className="flex items-center gap-6">
-            <h2 className="text-lg font-bold text-slate-900">Settings</h2>
-            <div className="flex bg-slate-100 p-1 rounded-lg">
+        <div className="px-8 py-6 border-b border-zinc-100 flex items-center justify-between bg-white shrink-0">
+          <div className="flex items-center gap-10">
+            <h2 className="text-xl font-black text-zinc-900 tracking-tight">Settings</h2>
+            <div className="flex bg-zinc-100 p-1.5 rounded-2xl">
                 <button
                     onClick={() => setActiveTab('guide')}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                    className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-black transition-all ${
                         activeTab === 'guide' 
-                        ? 'bg-white text-indigo-600 shadow-sm' 
-                        : 'text-slate-500 hover:text-slate-700'
+                        ? 'bg-white text-zinc-900 shadow-sm' 
+                        : 'text-zinc-400 hover:text-zinc-600'
                     }`}
                 >
                     <BookOpen size={14} />
@@ -127,10 +124,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 </button>
                 <button
                     onClick={() => setActiveTab('customize')}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                    className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-black transition-all ${
                         activeTab === 'customize' 
-                        ? 'bg-white text-indigo-600 shadow-sm' 
-                        : 'text-slate-500 hover:text-slate-700'
+                        ? 'bg-white text-zinc-900 shadow-sm' 
+                        : 'text-zinc-400 hover:text-zinc-600'
                     }`}
                 >
                     <Sliders size={14} />
@@ -140,125 +137,91 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           </div>
           <button 
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors"
+            className="p-3 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 rounded-full transition-all"
           >
-            <X size={20} />
+            <X size={24} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto bg-slate-50/50 p-6">
+        <div className="flex-1 overflow-y-auto bg-zinc-50/30 p-8">
             {activeTab === 'guide' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
-                    <CriteriaCard title={`Money (x${localConfig.weights.m})`} color="text-emerald-600" items={localConfig.criteria.m} />
-                    <CriteriaCard title={`Asset (x${localConfig.weights.a})`} color="text-violet-600" items={localConfig.criteria.a} />
-                    <CriteriaCard title="Deadline (Multiplier)" color="text-red-600" items={localConfig.criteria.d} />
-                    <CriteriaCard title="Effort (Subtractor)" color="text-amber-600" items={localConfig.criteria.e} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-10">
+                    <CriteriaCard title={`Money (x${localConfig.weights.m})`} color="text-emerald-500" items={localConfig.criteria.m} />
+                    <CriteriaCard title={`Asset (x${localConfig.weights.a})`} color="text-violet-500" items={localConfig.criteria.a} />
+                    <CriteriaCard title="Deadline (Multiplier)" color="text-red-500" items={localConfig.criteria.d} />
+                    <CriteriaCard title="Effort (Subtractor)" color="text-amber-500" items={localConfig.criteria.e} />
                 </div>
             ) : (
-                <div className="max-w-4xl mx-auto space-y-8 pb-12">
+                <div className="max-w-4xl mx-auto space-y-10 pb-20">
                     {/* Weights Section */}
-                    <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-slate-900">Formula Weights</h3>
-                            <span className="text-xs font-mono text-slate-400 bg-slate-100 px-2 py-1 rounded">Score = ({localConfig.weights.m}M + {localConfig.weights.a}A) × D - E</span>
+                    <div className="bg-white p-8 rounded-[2.5rem] border border-zinc-100 shadow-sm">
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="text-lg font-black text-zinc-900">Formula Weights</h3>
+                            <span className="text-[10px] font-black text-zinc-400 bg-zinc-50 px-3 py-1.5 rounded-full border border-zinc-100 uppercase tracking-widest">
+                                Score = ({localConfig.weights.m}M + {localConfig.weights.a}A) × D - E
+                            </span>
                         </div>
-                        <div className="grid grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Money Weight</label>
+                        <div className="grid grid-cols-2 gap-8">
+                            <div className="space-y-3">
+                                <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Money Weight</label>
                                 <input 
                                     type="number" 
                                     step="0.1"
                                     value={localConfig.weights.m}
                                     onChange={(e) => handleWeightChange('m', e.target.value)}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-mono font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full px-5 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-zinc-900 font-bold focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition-all"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Asset Weight</label>
+                            <div className="space-y-3">
+                                <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Asset Weight</label>
                                 <input 
                                     type="number" 
                                     step="0.1"
                                     value={localConfig.weights.a}
                                     onChange={(e) => handleWeightChange('a', e.target.value)}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-mono font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full px-5 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-zinc-900 font-bold focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition-all"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* Default MADE values */}
-                    <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-slate-900">Default MADE values</h3>
-                            <span className="text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-1 rounded">Used when adding tasks</span>
+                    {/* Default values */}
+                    <div className="bg-white p-8 rounded-[2.5rem] border border-zinc-100 shadow-sm">
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="text-lg font-black text-zinc-900">Default Starting Values</h3>
+                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Initial slider positions</span>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Money (1-10)</label>
-                                <input
-                                    type="number"
-                                    min={1}
-                                    max={10}
-                                    step={1}
-                                    value={localConfig.defaultValues.m}
-                                    onChange={(e) => handleDefaultValueChange('m', e.target.value)}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Asset (1-10)</label>
-                                <input
-                                    type="number"
-                                    min={1}
-                                    max={10}
-                                    step={1}
-                                    value={localConfig.defaultValues.a}
-                                    onChange={(e) => handleDefaultValueChange('a', e.target.value)}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Deadline (1.0-2.0)</label>
-                                <input
-                                    type="number"
-                                    min={1.0}
-                                    max={2.0}
-                                    step={0.1}
-                                    value={localConfig.defaultValues.d}
-                                    onChange={(e) => handleDefaultValueChange('d', e.target.value)}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Effort (1-5)</label>
-                                <input
-                                    type="number"
-                                    min={1}
-                                    max={5}
-                                    step={1}
-                                    value={localConfig.defaultValues.e}
-                                    onChange={(e) => handleDefaultValueChange('e', e.target.value)}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
-                                />
-                            </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            {(['m', 'a', 'd', 'e'] as const).map(key => (
+                                <div key={key} className="space-y-3">
+                                    <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">
+                                        {key === 'm' ? 'Money' : key === 'a' ? 'Asset' : key === 'd' ? 'Deadline' : 'Effort'}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step={key === 'd' ? 0.1 : 1}
+                                        value={localConfig.defaultValues[key]}
+                                        onChange={(e) => handleDefaultValueChange(key, e.target.value)}
+                                        className="w-full px-4 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-zinc-900 font-bold focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition-all"
+                                    />
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Descriptions Section */}
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                             <div>
-                                <h3 className="font-bold text-slate-900">Criteria Configuration</h3>
-                                <p className="text-xs text-slate-500 mt-1">Define ranges (e.g. "9-10") or specific values (e.g. "9.5")</p>
-                             </div>
+                    {/* Criteria Section */}
+                    <div className="space-y-8">
+                        <div className="px-2">
+                            <h3 className="text-xl font-black text-zinc-900">Criteria Rules</h3>
+                            <p className="text-sm text-zinc-400 font-medium mt-1">Customize the labels and descriptions for each MADE level.</p>
                         </div>
                         
                         {(['m', 'a', 'd', 'e'] as const).map((key) => (
-                             <div key={key} className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm relative group">
-                                <div className="flex items-center justify-between mb-4 border-b border-slate-50 pb-2">
-                                    <h4 className="font-bold text-slate-900 uppercase text-xs tracking-wider flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full ${
+                             <div key={key} className="bg-white p-8 rounded-[2.5rem] border border-zinc-100 shadow-sm relative group">
+                                <div className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-50">
+                                    <h4 className="font-black text-zinc-900 uppercase text-xs tracking-[0.2em] flex items-center gap-3">
+                                        <div className={`w-2.5 h-2.5 rounded-full ${
                                             key === 'm' ? 'bg-emerald-500' : 
                                             key === 'a' ? 'bg-violet-500' : 
                                             key === 'd' ? 'bg-red-500' : 'bg-amber-500'
@@ -267,31 +230,29 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                                     </h4>
                                     <button 
                                         onClick={() => autoSortCriteria(key)}
-                                        className="text-[10px] font-bold text-slate-400 hover:text-indigo-600 flex items-center gap-1 bg-slate-50 px-2 py-1 rounded transition-colors"
-                                        title="Sort descending"
+                                        className="text-[10px] font-black text-zinc-400 hover:text-indigo-600 flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-xl border border-zinc-100 transition-all"
                                     >
-                                        <ArrowDownWideNarrow size={12} /> Auto Sort
+                                        <ArrowDownWideNarrow size={14} /> 
+                                        AUTO SORT
                                     </button>
                                 </div>
 
-                                <div className="space-y-3">
-                                    {/* Table Header */}
-                                    <div className="grid grid-cols-12 gap-3 px-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                        <div className="col-span-2">Range / Val</div>
-                                        <div className="col-span-3">Label (Short)</div>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-12 gap-4 px-2 text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                        <div className="col-span-2 text-center">Value</div>
+                                        <div className="col-span-3">Label</div>
                                         <div className="col-span-6">Description</div>
-                                        <div className="col-span-1 text-right">Action</div>
+                                        <div className="col-span-1"></div>
                                     </div>
 
                                     {localConfig.criteria[key].map((item, idx) => (
-                                        <div key={idx} className="grid grid-cols-12 gap-3 items-start animate-in fade-in duration-300">
+                                        <div key={idx} className="grid grid-cols-12 gap-4 items-center group/row animate-in slide-in-from-left-2 duration-300">
                                             <div className="col-span-2">
                                                 <input
                                                     type="text"
                                                     value={item.range}
                                                     onChange={(e) => handleCriteriaChange(key, idx, 'range', e.target.value)}
-                                                    className="w-full text-xs font-mono font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded px-2 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-center"
-                                                    placeholder="e.g. 1-2"
+                                                    className="w-full text-xs font-bold text-center text-zinc-600 bg-zinc-50 border border-zinc-100 rounded-xl px-2 py-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all"
                                                 />
                                             </div>
                                             <div className="col-span-3">
@@ -299,8 +260,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                                                     type="text"
                                                     value={item.label}
                                                     onChange={(e) => handleCriteriaChange(key, idx, 'label', e.target.value)}
-                                                    className="w-full text-xs font-semibold text-slate-900 border border-slate-200 rounded px-2 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
-                                                    placeholder="Label"
+                                                    className="w-full text-xs font-black text-zinc-900 bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all"
                                                 />
                                             </div>
                                             <div className="col-span-6">
@@ -308,17 +268,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                                                     value={item.description}
                                                     onChange={(e) => handleCriteriaChange(key, idx, 'description', e.target.value)}
                                                     rows={1}
-                                                    className="w-full text-xs text-slate-600 border border-slate-200 rounded px-2 py-2 focus:ring-2 focus:ring-indigo-500 outline-none resize-none min-h-[34px] leading-relaxed"
-                                                    placeholder="Description"
+                                                    className="w-full text-xs font-medium text-zinc-500 bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none resize-none transition-all"
                                                 />
                                             </div>
-                                            <div className="col-span-1 flex justify-end pt-1">
+                                            <div className="col-span-1 flex justify-center">
                                                 <button 
                                                     onClick={() => removeCriteriaRow(key, idx)}
-                                                    className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
-                                                    title="Remove row"
+                                                    className="p-2 text-zinc-200 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover/row:opacity-100"
                                                 >
-                                                    <Trash2 size={14} />
+                                                    <Trash2 size={16} />
                                                 </button>
                                             </div>
                                         </div>
@@ -326,9 +284,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                                     
                                     <button 
                                         onClick={() => addCriteriaRow(key)}
-                                        className="w-full py-2 flex items-center justify-center gap-2 text-xs font-bold text-slate-400 border border-dashed border-slate-200 rounded-lg hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all mt-2"
+                                        className="w-full py-4 flex items-center justify-center gap-3 text-xs font-black text-zinc-400 border-2 border-dashed border-zinc-100 rounded-2xl hover:border-indigo-200 hover:text-indigo-600 hover:bg-indigo-50 transition-all mt-4"
                                     >
-                                        <Plus size={14} /> Add Criteria Rule
+                                        <Plus size={16} /> ADD NEW RULE
                                     </button>
                                 </div>
                              </div>
@@ -339,27 +297,27 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-100 bg-white flex justify-between items-center shrink-0">
+        <div className="px-8 py-6 border-t border-zinc-100 bg-white flex justify-between items-center shrink-0">
              <button 
                 onClick={resetDefaults}
-                className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-red-500 transition-colors"
+                className="flex items-center gap-2 text-xs font-black text-zinc-400 hover:text-red-600 transition-colors uppercase tracking-widest"
              >
-                <RotateCcw size={14} />
+                <RotateCcw size={16} />
                 Reset Defaults
              </button>
-             <div className="flex gap-3">
+             <div className="flex gap-4">
                 <button 
                     onClick={onClose}
-                    className="px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-lg transition-colors"
+                    className="px-8 py-3.5 text-sm font-black text-zinc-400 hover:text-zinc-900 rounded-2xl transition-all"
                 >
                     Cancel
                 </button>
                 <button 
                     onClick={saveChanges}
-                    className="flex items-center gap-2 px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-bold shadow-lg shadow-slate-900/10 transition-transform active:scale-95"
+                    className="flex items-center gap-3 px-10 py-3.5 bg-zinc-900 text-white rounded-[1.25rem] text-sm font-black shadow-xl shadow-zinc-200 hover:bg-indigo-600 transition-all active:scale-95"
                 >
-                    <Save size={16} />
-                    Save Configuration
+                    <Save size={18} />
+                    Save All Changes
                 </button>
              </div>
         </div>

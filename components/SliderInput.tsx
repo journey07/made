@@ -81,14 +81,14 @@ export const SliderInput: React.FC<SliderInputProps> = ({
       {/* Label Row */}
       <div className="flex justify-between items-end mb-4 px-1">
         <div>
-            <label className={`text-[10px] font-bold ${textColor} uppercase tracking-widest block mb-1.5 flex items-center gap-2`}>
+            <label className={`text-sm font-black ${textColor} uppercase tracking-widest block mb-1.5 flex items-center gap-2`}>
               {label}
             </label>
-            <p className="text-sm font-medium text-slate-500 h-5 leading-5 overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] transition-colors duration-300 group-hover/slider:text-slate-700">
+            <p className="text-sm font-semibold text-zinc-400 h-5 leading-5 overflow-hidden text-ellipsis whitespace-nowrap max-w-[300px] transition-colors duration-300 group-hover/slider:text-zinc-600">
                 {subLabel || "Select a value"}
             </p>
         </div>
-        <div className={`text-3xl font-mono font-black tracking-tighter tabular-nums transition-all duration-300 transform origin-right ${isDragging ? `scale-110 ${textColor}` : 'text-slate-900'}`}>
+        <div className={`text-3xl font-black tracking-tighter tabular-nums transition-all duration-300 transform origin-right ${isDragging ? `scale-110 ${textColor}` : 'text-zinc-900'}`}>
             {displayValue !== undefined ? displayValue : value}
         </div>
       </div>
@@ -112,28 +112,26 @@ export const SliderInput: React.FC<SliderInputProps> = ({
         />
 
         {/* Track */}
-        <div className="absolute w-full h-1 bg-slate-100 rounded-full shadow-sm overflow-visible">
+        <div className="absolute w-full h-1.5 bg-zinc-100 rounded-full overflow-hidden">
              {/* Filled Progress */}
              <div 
-                className={`absolute h-full rounded-full transition-all duration-150 ease-out bg-gradient-to-r ${colors.from} ${colors.to} opacity-80`}
+                className={`absolute h-full rounded-full transition-all duration-150 ease-out bg-gradient-to-r ${colors.from} ${colors.to} opacity-60`}
                 style={{ width: `${percentage}%` }}
              />
         </div>
 
-        {/* Thumb - Wide Pill / Capsule Style */}
+        {/* Thumb - Ultra Clean Pill */}
         <div 
-            className={`absolute top-1/2 -translate-y-1/2 w-12 h-6 bg-white rounded-full shadow-[0_2px_6px_rgba(0,0,0,0.12)] border border-slate-200/80 pointer-events-none transition-all duration-150 ease-out z-20 flex items-center justify-center gap-1
-                ${isDragging ? 'scale-105 ring-3' : 'group-hover/slider:scale-105 ring-2'}
+            className={`absolute top-1/2 -translate-y-1/2 w-10 h-6 bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-zinc-200 pointer-events-none transition-all duration-150 ease-out z-20 flex items-center justify-center gap-1
+                ${isDragging ? 'scale-110 ring-4' : 'group-hover/slider:scale-105 ring-2'}
                 ${colors.ring}
             `}
             style={{ 
-                left: `calc(${percentage}% - 24px)` // Center the 48px thumb
+                left: `calc(${percentage}% - 20px)` 
             }}
         >
-             {/* Grip Lines */}
-             <div className={`w-0.5 h-2.5 rounded-full ${isDragging ? colors.thumb : 'bg-slate-300'} transition-colors duration-200`} />
-             <div className={`w-0.5 h-2.5 rounded-full ${isDragging ? colors.thumb : 'bg-slate-300'} transition-colors duration-200`} />
-             <div className={`w-0.5 h-2.5 rounded-full ${isDragging ? colors.thumb : 'bg-slate-300'} transition-colors duration-200`} />
+             <div className={`w-1 h-1 rounded-full ${isDragging ? colors.thumb : 'bg-zinc-200'} transition-colors duration-200`} />
+             <div className={`w-1 h-1 rounded-full ${isDragging ? colors.thumb : 'bg-zinc-200'} transition-colors duration-200`} />
         </div>
       </div>
     </div>

@@ -2,11 +2,9 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# MADE Framework Planner (Vite + React)
 
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/drive/1Sq4rmIPj5NNp8yzeO0TNHSeSRFcUlBFz
+This app now supports **Supabase sync (no login)** so your tasks/config survive browser cache clears (via a bookmarkable sync link).
 
 ## Run Locally
 
@@ -15,6 +13,14 @@ View your app in AI Studio: https://ai.studio/apps/drive/1Sq4rmIPj5NNp8yzeO0TNHS
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Create `.env.local` and set Supabase env vars (copy from `supabase.env.example`)
+3. In Supabase, create the RPC/table by running `supabase/public_sync_first_run.sql` in SQL Editor (first install)
+4. Run the app:
    `npm run dev`
+
+## Supabase setup
+
+- **Env vars**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+- **DB schema**:
+  - First install (no destructive warning): `supabase/public_sync_first_run.sql`
+  - Re-runnable/updates (may show warning due to DROP): `supabase/public_sync.sql`
