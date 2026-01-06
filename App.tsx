@@ -461,16 +461,16 @@ export default function App() {
       
       {/* Navbar - Cleaner & Floating */}
       <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-zinc-200/50">
-        <div className="max-w-[1440px] mx-auto px-6 sm:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-1.5 bg-zinc-900 rounded-xl shadow-lg shadow-zinc-900/20">
-              <img src={logo} alt="MADE" className="w-6 h-6 object-cover" />
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1 sm:p-1.5 bg-zinc-900 rounded-lg sm:rounded-xl shadow-lg shadow-zinc-900/20">
+              <img src={logo} alt="MADE" className="w-5 h-5 sm:w-6 sm:h-6 object-cover" />
             </div>
             <h1 
-              className="text-base font-bold tracking-tight text-zinc-900"
+              className="text-sm sm:text-base font-bold tracking-tight text-zinc-900"
               style={{ fontFamily: "'Tinos', 'Inter', serif" }}
             >
-              MADE <span className="text-zinc-400 font-normal mx-1">|</span> <span className="text-zinc-500">Prioritize your time</span>
+              MADE <span className="hidden xs:inline text-zinc-400 font-normal mx-1">|</span> <span className="hidden xs:inline text-zinc-500">Prioritize your time</span>
             </h1>
           </div>
           
@@ -486,7 +486,7 @@ export default function App() {
 
             <button 
               onClick={() => setShowRecoveryModal(true)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 border ${
+              className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-full text-[10px] lg:text-xs font-bold transition-all duration-200 border ${
                 syncStatus === 'synced' ? 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100' :
                 syncStatus === 'saving' ? 'bg-amber-50 border-amber-200 text-amber-600' :
                 syncStatus === 'error' ? 'bg-red-50 border-red-100 text-red-600' :
@@ -494,7 +494,7 @@ export default function App() {
               }`}
             >
               {syncDisplay.icon}
-              <span className="hidden md:inline">{syncDisplay.text}</span>
+              <span className="hidden sm:inline">{syncDisplay.text}</span>
             </button>
 
             <button 
@@ -581,32 +581,32 @@ export default function App() {
 
       <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} config={config} onSave={handleConfigSave} />
 
-      <main className="max-w-[1440px] mx-auto px-6 sm:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <main className="max-w-[1440px] mx-auto px-4 sm:px-8 py-6 lg:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           
           {/* LEFT: Input Section */}
           <div className="lg:col-span-5 relative" ref={formRef}>
-            <div className={`bg-white rounded-2xl p-6 shadow-[0_2px_15px_rgb(0,0,0,0.04)] border border-zinc-100 transition-all duration-500 sticky top-24 ${
+            <div className={`bg-white rounded-2xl lg:rounded-3xl p-5 lg:p-8 shadow-[0_2px_15px_rgb(0,0,0,0.04)] border border-zinc-100 transition-all duration-500 lg:sticky lg:top-24 ${
                 editingId ? 'ring-2 ring-indigo-500/30' : ''
             }`}>
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex justify-between items-center mb-5 lg:mb-8">
                   <div className="flex items-center gap-3">
                     <div className={`w-1 h-5 rounded-full ${editingId ? 'bg-indigo-500' : 'bg-zinc-900'}`}></div>
-                    <h2 className="text-lg font-bold text-zinc-900 tracking-tight">{editingId ? "Edit Task" : "New Task"}</h2>
+                    <h2 className="text-lg lg:text-xl font-bold text-zinc-900 tracking-tight">{editingId ? "Edit Task" : "New Task"}</h2>
                   </div>
                   {editingId && (
                       <button onClick={cancelEditing} className="p-2 text-zinc-400 hover:text-zinc-600 transition-colors"><X size={18} /></button>
                   )}
               </div>
               
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-5 lg:space-y-8">
                 <div className="space-y-4">
                   <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="What needs to be done?"
-                    className="w-full text-xl font-bold bg-transparent border-b border-zinc-100 py-2 placeholder-zinc-300 focus:outline-none focus:border-indigo-500 transition-all duration-300"
+                    className="w-full text-lg lg:text-xl font-bold bg-transparent border-b border-zinc-100 py-2 placeholder-zinc-300 focus:outline-none focus:border-indigo-500 transition-all duration-300"
                     autoFocus
                   />
                   <textarea
@@ -614,11 +614,11 @@ export default function App() {
                      onChange={(e) => setDescription(e.target.value)}
                      placeholder="Add details (optional)"
                      rows={1}
-                     className="w-full text-sm font-medium bg-transparent border-b border-zinc-100 py-2 placeholder-zinc-300 focus:outline-none focus:border-indigo-500 transition-all duration-300 resize-none overflow-hidden"
+                     className="w-full text-xs lg:text-sm font-medium bg-transparent border-b border-zinc-100 py-2 placeholder-zinc-300 focus:outline-none focus:border-indigo-500 transition-all duration-300 resize-none overflow-hidden"
                   />
                 </div>
 
-                <div className="space-y-5">
+                <div className="space-y-5 lg:space-y-6">
                   <SliderInput 
                     label="Money"
                     value={m} min={1} max={10} step={1} 
@@ -635,7 +635,7 @@ export default function App() {
                     onChange={setA} 
                     subLabel={getDescription(a, config.criteria.a)}
                   />
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4 lg:gap-6">
                     <SliderInput 
                       label="Deadline" 
                       value={d} min={1.0} max={2.0} step={0.1} 
@@ -656,26 +656,26 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="pt-6 flex items-center justify-between gap-4 border-t border-zinc-50 mt-4">
-                    <div className="flex flex-col items-start shrink-0">
-                      <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-0.5">Priority Score</span>
+                <div className="pt-4 lg:pt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 lg:gap-6 border-t border-zinc-50 mt-4">
+                    <div className="flex flex-row sm:flex-col items-baseline sm:items-start justify-between sm:justify-start shrink-0">
+                      <span className="text-[9px] lg:text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-0.5">Priority Score</span>
                       <div className="flex items-baseline gap-0.5">
-                          <span className="text-3xl font-black text-zinc-900 tracking-tighter">{formatScore(currentScore)}</span>
-                          <span className="text-[10px] font-bold text-zinc-400">PTS</span>
+                          <span className="text-2xl lg:text-3xl font-black text-zinc-900 tracking-tighter">{formatScore(currentScore)}</span>
+                          <span className="text-[9px] lg:text-[10px] font-bold text-zinc-400 uppercase">PTS</span>
                       </div>
                     </div>
                     <button
                       id="mades-submit-btn"
                       type="submit"
                       disabled={!title}
-                      className={`px-10 group rounded-xl py-4 font-bold text-sm shadow-md disabled:opacity-30 disabled:shadow-none transition-all duration-300 flex items-center justify-center gap-2 ${
+                      className={`px-6 lg:px-10 group rounded-xl py-3.5 lg:py-4 font-bold text-sm shadow-md disabled:opacity-30 disabled:shadow-none transition-all duration-300 flex items-center justify-center gap-2 ${
                           editingId 
                               ? 'bg-indigo-600 text-white shadow-indigo-100' 
                               : 'bg-zinc-900 text-white shadow-zinc-100'
                       }`}
                     >
                       <span>{editingId ? "Update Task" : "Add to Queue"}</span>
-                      <div className="flex items-center gap-1 opacity-40 text-[9px] bg-white/20 px-1.5 py-0.5 rounded">
+                      <div className="hidden lg:flex items-center gap-1 opacity-40 text-[9px] bg-white/20 px-1.5 py-0.5 rounded">
                           <Command size={9} />
                           <span>↵</span>
                       </div>
@@ -686,13 +686,13 @@ export default function App() {
           </div>
 
           {/* RIGHT: List Section */}
-          <div className="lg:col-span-7 space-y-8">
+          <div className="lg:col-span-7 space-y-6 lg:space-y-8">
             
-            {/* 🎯 MAIN FOCUS AREA: The Rank #1 Task - More Compact & Aligned */}
+            {/* 🎯 MAIN FOCUS AREA: The Rank #1 Task */}
             {activeTab === 'queue' && sortedTasks.length > 0 && (
-              <div className="relative bg-white rounded-2xl border border-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] overflow-hidden animate-in slide-in-from-top-2 duration-500 flex">
+              <div className={`relative bg-white rounded-2xl border border-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] overflow-hidden animate-in slide-in-from-top-2 duration-500 flex transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 scale-[0.98] translate-y-2' : ''}`}>
                 {/* 🧬 Mini DNA Sidebar Accent - Full height */}
-                <div className="w-1.5 shrink-0 flex flex-col opacity-40">
+                <div className="w-1 lg:w-1.5 shrink-0 flex flex-col opacity-40">
                   <div style={{ flex: sortedTasks[0].m }} className="bg-emerald-400" />
                   <div style={{ flex: sortedTasks[0].a }} className="bg-violet-400" />
                   <div style={{ flex: sortedTasks[0].d }} className="bg-red-400" />
@@ -700,85 +700,86 @@ export default function App() {
                 </div>
 
                 <div className="flex-1 relative">
-                  <div className="p-8 pb-16 relative">
-                    <div className="absolute top-0 right-0 p-6">
-                      <div className="bg-zinc-900 text-white px-4 py-3 rounded-xl flex flex-col items-center justify-center shadow-lg">
-                        <span className="text-xl font-black leading-none">{formatScore(sortedTasks[0].score)}</span>
-                        <span className="text-[8px] font-black opacity-40 tracking-widest mt-1">MADE</span>
+                  <div className="p-5 lg:p-8 pb-24 lg:pb-16 relative">
+                    <div className={`absolute top-4 lg:top-0 right-4 lg:right-0 p-0 lg:p-6 scale-90 lg:scale-100 transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 scale-50' : ''}`}>
+                      <div className="bg-zinc-900 text-white px-3 lg:px-4 py-2 lg:py-3 rounded-xl flex flex-col items-center justify-center shadow-lg min-w-[60px] lg:min-w-0">
+                        <span className="text-lg lg:text-xl font-black leading-none">{formatScore(sortedTasks[0].score)}</span>
+                        <span className="text-[7px] lg:text-[8px] font-black opacity-40 tracking-widest mt-1 uppercase">MADE</span>
                       </div>
                     </div>
                     
                     <div className="relative z-10 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 px-3 py-1 bg-red-50 border border-red-100 rounded-full shadow-sm">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
-                        </span>
-                        <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">Critical Mission</span>
+                      <div className={`flex items-center gap-3 transition-all duration-500 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 -translate-x-4' : ''}`}>
+                        <div className="flex items-center gap-2 px-2 lg:px-3 py-1 bg-red-50 border border-red-100 rounded-full shadow-sm">
+                          <span className="relative flex h-1.5 lg:h-2 w-1.5 lg:w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-1.5 lg:h-2 w-1.5 lg:w-2 bg-red-600"></span>
+                          </span>
+                          <span className="text-[8px] lg:text-[10px] font-black text-red-600 uppercase tracking-widest text-nowrap">Critical Mission</span>
+                        </div>
+                        <span className="text-[8px] lg:text-[10px] font-black text-red-500 uppercase tracking-[0.2em] opacity-80 animate-pulse text-nowrap">Execute Now</span>
                       </div>
-                      <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] opacity-80 animate-pulse">Execute Now</span>
-                    </div>
                       
-                      <div className="space-y-1 max-w-xl">
-                        <h2 className="text-2xl font-black text-zinc-900 tracking-tight leading-tight">{sortedTasks[0].title}</h2>
+                      <div className="space-y-1 max-w-[calc(100%-80px)] lg:max-w-xl">
+                        <h2 className={`text-xl lg:text-2xl font-black tracking-tight leading-tight break-words pr-4 lg:pr-0 transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'text-emerald-500 line-through opacity-50 translate-x-2' : 'text-zinc-900'}`}>{sortedTasks[0].title}</h2>
                         {sortedTasks[0].description && (
-                          <p className="text-sm text-zinc-400 font-medium line-clamp-2 leading-relaxed">
+                          <p className={`text-xs lg:text-sm font-medium line-clamp-3 lg:line-clamp-2 leading-relaxed transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'text-emerald-300 opacity-30 translate-x-2' : 'text-zinc-400'}`}>
                             {sortedTasks[0].description}
                           </p>
                         )}
                       </div>
 
-                    <div className="flex items-center gap-4 pt-2">
-                      <button 
-                        onClick={() => toggleComplete(sortedTasks[0].id, false)}
-                        className="group flex items-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-xl font-bold text-xs hover:bg-indigo-600 transition-all shadow-md"
-                      >
-                        <CheckCircle2 size={18} />
-                        <span>Complete Task</span>
-                      </button>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 lg:gap-4 pt-2">
                         <button 
-                          onClick={() => startEditing(sortedTasks[0])}
-                          className="flex items-center gap-1.5 text-zinc-400 hover:text-zinc-900 font-bold text-xs transition-all px-3 py-2 rounded-lg hover:bg-zinc-50"
+                          onClick={() => toggleComplete(sortedTasks[0].id, false)}
+                          disabled={completingIds.has(sortedTasks[0].id)}
+                          className={`group flex items-center justify-center gap-2 px-5 lg:px-6 py-3.5 lg:py-3 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 ${completingIds.has(sortedTasks[0].id) ? 'bg-emerald-500 text-white scale-95 shadow-emerald-100' : 'bg-zinc-900 text-white hover:bg-indigo-600'}`}
                         >
-                          <Pencil size={14} />
-                          <span>Edit</span>
+                          {completingIds.has(sortedTasks[0].id) ? <Check size={16} lg:size={18} className="animate-bounce" /> : <CheckCircle2 size={16} lg:size={18} />}
+                          <span>{completingIds.has(sortedTasks[0].id) ? "Done!" : "Complete Task"}</span>
                         </button>
-                        <button 
-                          onClick={() => deleteTask(sortedTasks[0].id)}
-                          className="flex items-center gap-1.5 text-zinc-400 hover:text-red-600 font-bold text-xs transition-all px-3 py-2 rounded-lg hover:bg-red-50"
-                        >
-                          <Trash2 size={14} />
-                          <span>Delete</span>
-                        </button>
+                        <div className={`flex items-center gap-2 justify-center sm:justify-start transition-all duration-500 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 scale-75' : ''}`}>
+                          <button 
+                            onClick={() => startEditing(sortedTasks[0])}
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-zinc-400 hover:text-zinc-900 font-bold text-[11px] lg:text-xs transition-all px-3 py-2.5 lg:py-2 rounded-lg hover:bg-zinc-50"
+                          >
+                            <Pencil size={14} />
+                            <span>Edit</span>
+                          </button>
+                          <button 
+                            onClick={() => deleteTask(sortedTasks[0].id)}
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-zinc-400 hover:text-red-600 font-bold text-[11px] lg:text-xs transition-all px-3 py-2.5 lg:py-2 rounded-lg hover:bg-red-50"
+                          >
+                            <Trash2 size={14} />
+                            <span>Delete</span>
+                          </button>
+                        </div>
                       </div>
-                    </div>
                     </div>
                   </div>
 
-                  {/* 🧬 MADE Bottom Bar with Scores & Labels - Perfectly aligned */}
-                  <div className="absolute bottom-0 left-0 right-0 h-10 flex items-center px-8 justify-between bg-zinc-50/80 border-t border-zinc-100/50">
-                    <div className="flex gap-8">
+                  {/* 🧬 MADE Bottom Bar: Responsive Grid for mobile */}
+                  <div className={`absolute bottom-0 left-0 right-0 py-2.5 lg:h-10 flex items-center px-5 lg:px-8 bg-zinc-50/80 border-t border-zinc-100/50 transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 translate-y-4' : ''}`}>
+                    <div className="grid grid-cols-2 lg:flex lg:gap-8 w-full gap-y-1.5 gap-x-4">
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Money</span>
-                        <span className="text-[11px] font-black text-zinc-900">{sortedTasks[0].m}</span>
-                        <span className="text-[9px] font-bold text-zinc-400">{getLabel(sortedTasks[0].m, config.criteria.m)}</span>
+                        <span className="text-[7px] lg:text-[9px] font-black text-emerald-500 uppercase tracking-widest">Money</span>
+                        <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">{sortedTasks[0].m}</span>
+                        <span className="text-[8px] lg:text-[9px] font-bold text-zinc-400 hidden lg:inline">{getLabel(sortedTasks[0].m, config.criteria.m)}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black text-violet-500 uppercase tracking-widest">Asset</span>
-                        <span className="text-[11px] font-black text-zinc-900">{sortedTasks[0].a}</span>
-                        <span className="text-[9px] font-bold text-zinc-400">{getLabel(sortedTasks[0].a, config.criteria.a)}</span>
+                        <span className="text-[7px] lg:text-[9px] font-black text-violet-500 uppercase tracking-widest">Asset</span>
+                        <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">{sortedTasks[0].a}</span>
+                        <span className="text-[8px] lg:text-[9px] font-bold text-zinc-400 hidden lg:inline">{getLabel(sortedTasks[0].a, config.criteria.a)}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Deadline</span>
-                        <span className="text-[11px] font-black text-zinc-900">x{sortedTasks[0].d.toFixed(1)}</span>
-                        <span className="text-[9px] font-bold text-zinc-400">{getLabel(sortedTasks[0].d, config.criteria.d)}</span>
+                        <span className="text-[7px] lg:text-[9px] font-black text-red-500 uppercase tracking-widest">Deadline</span>
+                        <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">x{sortedTasks[0].d.toFixed(1)}</span>
+                        <span className="text-[8px] lg:text-[9px] font-bold text-zinc-400 hidden lg:inline">{getLabel(sortedTasks[0].d, config.criteria.d)}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">Effort</span>
-                        <span className="text-[11px] font-black text-zinc-900">-{sortedTasks[0].e}</span>
-                        <span className="text-[9px] font-bold text-zinc-400">{getLabel(sortedTasks[0].e, config.criteria.e)}</span>
+                        <span className="text-[7px] lg:text-[9px] font-black text-amber-500 uppercase tracking-widest">Effort</span>
+                        <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">-{sortedTasks[0].e}</span>
+                        <span className="text-[8px] lg:text-[9px] font-bold text-zinc-400 hidden lg:inline">{getLabel(sortedTasks[0].e, config.criteria.e)}</span>
                       </div>
                     </div>
                   </div>
@@ -787,48 +788,48 @@ export default function App() {
             )}
 
             {/* List Controls */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
+            <div className="flex flex-row items-center justify-between gap-4 px-2">
                 <div className="flex items-center gap-1 bg-zinc-100/50 p-1 rounded-xl">
                     <button 
                         onClick={() => setActiveTab('queue')}
-                        className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all ${
+                        className={`flex items-center gap-2 px-4 lg:px-5 py-2 rounded-lg text-[11px] lg:text-xs font-bold transition-all ${
                             activeTab === 'queue' 
                             ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/50' 
                             : 'text-zinc-400 hover:text-zinc-600'
                         }`}
                     >
-                        <Layers size={14} />
+                        <Layers size={12} lg:size={14} />
                         Queue
-                        <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-full ${activeTab === 'queue' ? 'bg-zinc-900 text-white' : 'bg-zinc-200 text-zinc-500'}`}>
+                        <span className={`ml-1 text-[8px] lg:text-[9px] px-1.5 py-0.5 rounded-full ${activeTab === 'queue' ? 'bg-zinc-900 text-white' : 'bg-zinc-200 text-zinc-500'}`}>
                             {tasks.filter(t => !t.completed).length}
                         </span>
                     </button>
                     <button 
                         onClick={() => setActiveTab('history')}
-                        className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all ${
+                        className={`flex items-center gap-2 px-4 lg:px-5 py-2 rounded-lg text-[11px] lg:text-xs font-bold transition-all ${
                             activeTab === 'history' 
                             ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/50' 
                             : 'text-zinc-400 hover:text-zinc-600'
                         }`}
                     >
-                        <History size={14} />
+                        <History size={12} lg:size={14} />
                         History
                     </button>
                 </div>
               
               {tasks.length > 0 && activeTab === 'queue' && (
-                  <button onClick={clearAll} className="text-[9px] font-bold text-zinc-300 hover:text-red-400 tracking-widest uppercase transition-colors px-2">Reset Queue</button>
+                  <button onClick={clearAll} className="text-[8px] lg:text-[9px] font-bold text-zinc-300 hover:text-red-400 tracking-widest uppercase transition-colors px-2">Reset</button>
               )}
             </div>
 
             {/* Tasks Rendering */}
             {sortedTasks.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-zinc-100 text-center px-8">
-                <div className="w-14 h-14 bg-zinc-50 rounded-xl flex items-center justify-center mb-6 text-zinc-200">
-                  <BarChart2 size={28} strokeWidth={1.5} />
+              <div className="flex flex-col items-center justify-center py-20 lg:py-24 bg-white rounded-2xl border border-zinc-100 text-center px-8">
+                <div className="w-12 lg:w-14 h-12 lg:h-14 bg-zinc-50 rounded-xl flex items-center justify-center mb-6 text-zinc-200">
+                  <BarChart2 size={24} lg:size={28} strokeWidth={1.5} />
                 </div>
-                <h3 className="text-base font-bold text-zinc-900 mb-1">{activeTab === 'queue' ? "No tasks queued" : "No history yet"}</h3>
-                <p className="text-zinc-400 max-w-[200px] text-xs font-medium leading-relaxed">{activeTab === 'queue' ? "Add a task to see it prioritized here." : "Completed tasks will be archived."}</p>
+                <h3 className="text-sm lg:text-base font-bold text-zinc-900 mb-1">{activeTab === 'queue' ? "No tasks queued" : "No history yet"}</h3>
+                <p className="text-zinc-400 max-w-[180px] lg:max-w-[200px] text-[10px] lg:text-xs font-medium leading-relaxed">{activeTab === 'queue' ? "Add a task to see it prioritized here." : "Completed tasks will be archived."}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -849,71 +850,79 @@ export default function App() {
                   return (
                   <React.Fragment key={task.id}>
                     {showDateHeader && (
-                        <div className="pt-6 pb-2 px-4 flex items-center gap-3">
-                            <h4 className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">{getRelativeDateLabel(getTaskTimestamp(task))}</h4>
+                        <div className="pt-4 lg:pt-6 pb-2 px-4 flex items-center gap-3">
+                            <h4 className="text-[8px] lg:text-[9px] font-bold text-zinc-400 uppercase tracking-widest">{getRelativeDateLabel(getTaskTimestamp(task))}</h4>
                             <div className="h-px bg-zinc-100 flex-grow"></div>
                         </div>
                     )}
 
                     <div 
-                        className={`group relative bg-white rounded-xl p-0.5 transition-all duration-300 ${
+                        className={`group relative bg-white rounded-xl p-0.5 transition-all duration-700 ${
                         task.completed 
                           ? 'opacity-60 bg-zinc-50 hover:opacity-100 hover:bg-white hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-200/40 hover:-translate-y-0.5' 
                           : 'hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-200/40 hover:-translate-y-0.5'
-                        } ${editingId === task.id ? 'ring-2 ring-indigo-500/50' : 'border border-zinc-100'} ${isCompleting ? 'opacity-0 scale-95' : ''}`}
+                        } ${editingId === task.id ? 'ring-2 ring-indigo-500/50' : 'border border-zinc-100'} ${isCompleting ? 'opacity-0 scale-[0.98] translate-x-12' : ''}`}
                     >
-                        <div className="p-5 pl-6">
-                            <div className="flex items-center gap-5">
+                        <div className="p-4 lg:p-5 pl-5 lg:pl-6">
+                            <div className="flex items-center gap-4 lg:gap-5">
                               <button 
                                   onClick={(e) => { e.stopPropagation(); toggleComplete(task.id, task.completed); }}
-                                  className={`flex-shrink-0 transition-all duration-300 ${
-                                  task.completed || isCompleting ? 'text-emerald-500' : 'text-zinc-200 hover:text-indigo-500'
+                                  disabled={isCompleting}
+                                  className={`flex-shrink-0 transition-all duration-500 ${
+                                  task.completed || isCompleting ? 'text-emerald-500 scale-110' : 'text-zinc-200 hover:text-indigo-500'
                                   }`}
                               >
-                                  {task.completed || isCompleting ? <CheckCircle2 size={26} className="fill-emerald-50" /> : <Circle size={26} strokeWidth={1.5} />}
+                                  {task.completed || isCompleting ? <CheckCircle2 size={24} lg:size={26} className={`${isCompleting ? 'animate-bounce' : ''} fill-emerald-50`} /> : <Circle size={24} lg:size={26} strokeWidth={1.5} />}
                               </button>
 
                               <div className="flex-grow min-w-0">
                                   <div className="flex justify-between items-center gap-3">
                                       <div className="space-y-1 min-w-0 flex-1">
-                                          <h3 className={`text-lg font-bold tracking-tight truncate transition-all ${
-                                              task.completed || isCompleting ? 'text-zinc-400 line-through' : 'text-zinc-900'
+                                          <h3 className={`text-base lg:text-lg font-bold tracking-tight truncate transition-all duration-700 ${
+                                              isCompleting 
+                                                ? 'text-emerald-500 line-through opacity-50 translate-x-2' 
+                                                : task.completed 
+                                                  ? 'text-zinc-900 line-through opacity-70' 
+                                                  : 'text-zinc-900'
                                           }`}>{task.title}</h3>
                                           
-                                          {/* Task Description - Shown if exists */}
                                           {task.description && (
-                                            <p className={`text-xs font-medium line-clamp-1 mb-1 transition-all ${
-                                              task.completed || isCompleting ? 'text-zinc-300' : 'text-zinc-400'
+                                            <p className={`text-[10px] lg:text-xs font-medium line-clamp-1 mb-1 transition-all duration-700 ${
+                                              isCompleting 
+                                                ? 'text-emerald-300 opacity-30 translate-x-2' 
+                                                : task.completed 
+                                                  ? 'text-zinc-900 opacity-50' 
+                                                  : 'text-zinc-400'
                                             }`}>
                                               {task.description}
                                             </p>
                                           )}
 
-                                          <div className="flex items-center gap-4">
-                                              <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">{new Date(displayTimestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                          <div className={`flex items-center gap-3 lg:gap-4 transition-all duration-700 ${isCompleting ? 'opacity-0 -translate-y-2' : ''}`}>
+                                              <span className="text-[8px] lg:text-[10px] font-bold text-zinc-300 uppercase tracking-widest">{new Date(displayTimestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                               
-                                              {/* 🧬 Mini DNA Strip: Always visible graphic indicators */}
-                                              <div className={`flex gap-2 items-center h-1.5 transition-opacity duration-200 ${!task.completed ? 'group-hover:opacity-0' : 'opacity-40 group-hover:opacity-0'}`}>
-                                                <div className="w-24 h-1 bg-zinc-50 rounded-full overflow-hidden">
+                                              {/* 🧬 Mini DNA Strip: Responsive width */}
+                                              <div className={`flex gap-1 lg:gap-2 items-center h-1 lg:h-1.5 transition-opacity duration-200 ${!task.completed ? 'group-hover:opacity-0' : 'opacity-40 group-hover:opacity-0'}`}>
+                                                <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
                                                   <div style={{ width: `${(task.m / 10) * 100}%` }} className="h-full bg-emerald-400" />
                                                 </div>
-                                                <div className="w-24 h-1 bg-zinc-50 rounded-full overflow-hidden">
+                                                <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
                                                   <div style={{ width: `${(task.a / 10) * 100}%` }} className="h-full bg-violet-400" />
                                                 </div>
-                                                <div className="w-24 h-1 bg-zinc-50 rounded-full overflow-hidden">
+                                                <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
                                                   <div style={{ width: `${((task.d - 1) / 1) * 100}%` }} className="h-full bg-red-400" />
                                                 </div>
-                                                <div className="w-24 h-1 bg-zinc-50 rounded-full overflow-hidden">
+                                                <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
                                                   <div style={{ width: `${(task.e / 5) * 100}%` }} className="h-full bg-amber-400" />
                                                 </div>
                                               </div>
                                           </div>
                                       </div>
                                       
-                                      <div className="flex items-center gap-4 flex-shrink-0">
+                                      <div className={`flex items-center gap-3 lg:gap-6 flex-shrink-0 transition-all duration-700 ${isCompleting ? 'opacity-0 scale-50 -translate-x-8' : ''}`}>
                                           <div className="flex flex-col items-end">
-                                            <span className="text-3xl font-black text-zinc-900 leading-none tracking-tighter">{formatScore(task.score)}</span>
-                                            <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mt-1">PTS</span>
+                                            <span className={`text-2xl lg:text-3xl font-black leading-none tracking-tighter transition-all duration-700 ${isCompleting ? 'text-emerald-500' : 'text-zinc-900'}`}>{formatScore(task.score)}</span>
+                                            <span className="text-[7px] lg:text-[8px] font-black text-zinc-400 uppercase tracking-widest mt-1">PTS</span>
                                           </div>
                                           
                                           <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
@@ -923,47 +932,47 @@ export default function App() {
                                       </div>
                                   </div>
 
-                                  {/* Hover Detail: Expands on hover (for both Queue and History) */}
-                                  <div className={`grid grid-cols-4 gap-4 mt-0 pt-0 overflow-hidden h-0 opacity-0 group-hover:h-auto group-hover:opacity-100 group-hover:mt-4 group-hover:pt-4 group-hover:border-t group-hover:border-zinc-50 transition-all duration-300 ease-out ${task.completed ? 'grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100' : ''}`}>
+                                  {/* Hover Detail: Expands on hover */}
+                                  <div className={`grid grid-cols-4 gap-2 lg:gap-4 mt-0 pt-0 overflow-hidden h-0 opacity-0 group-hover:h-auto group-hover:opacity-100 group-hover:mt-4 group-hover:pt-4 group-hover:border-t group-hover:border-zinc-50 transition-all duration-300 ease-out ${task.completed ? 'grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100' : ''}`}>
                                       <div className="flex flex-col">
                                           <div className="flex justify-between items-baseline">
-                                              <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Money</span>
-                                              <span className="text-xs font-black text-zinc-900">{task.m}</span>
+                                              <span className="text-[7px] lg:text-[9px] font-black text-emerald-500 uppercase tracking-widest">Money</span>
+                                              <span className="text-[9px] lg:text-xs font-black text-zinc-900">{task.m}</span>
                                           </div>
-                                          <div className="w-full h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1.5">
+                                          <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
                                               <div style={{ width: `${(task.m / 10) * 100}%` }} className="h-full bg-emerald-400" />
                                           </div>
-                                          <span className="text-[10px] font-bold text-zinc-400 mt-1.5 truncate">{getLabel(task.m, config.criteria.m)}</span>
+                                          <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.m, config.criteria.m)}</span>
                                       </div>
                                       <div className="flex flex-col">
                                           <div className="flex justify-between items-baseline">
-                                              <span className="text-[9px] font-black text-violet-500 uppercase tracking-widest">Asset</span>
-                                              <span className="text-xs font-black text-zinc-900">{task.a}</span>
+                                              <span className="text-[7px] lg:text-[9px] font-black text-violet-500 uppercase tracking-widest">Asset</span>
+                                              <span className="text-[9px] lg:text-xs font-black text-zinc-900">{task.a}</span>
                                           </div>
-                                          <div className="w-full h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1.5">
+                                          <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
                                               <div style={{ width: `${(task.a / 10) * 100}%` }} className="h-full bg-violet-400" />
                                           </div>
-                                          <span className="text-[10px] font-bold text-zinc-400 mt-1.5 truncate">{getLabel(task.a, config.criteria.a)}</span>
+                                          <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.a, config.criteria.a)}</span>
                                       </div>
                                       <div className="flex flex-col">
                                           <div className="flex justify-between items-baseline">
-                                              <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Deadline</span>
-                                              <span className="text-xs font-black text-zinc-900">x{task.d.toFixed(1)}</span>
+                                              <span className="text-[7px] lg:text-[9px] font-black text-red-500 uppercase tracking-widest">Deadline</span>
+                                              <span className="text-[9px] lg:text-xs font-black text-zinc-900">x{task.d.toFixed(1)}</span>
                                           </div>
-                                          <div className="w-full h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1.5">
+                                          <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
                                               <div style={{ width: `${((task.d - 1) / 1) * 100}%` }} className="h-full bg-red-400" />
                                           </div>
-                                          <span className="text-[10px] font-bold text-zinc-400 mt-1.5 truncate">{getLabel(task.d, config.criteria.d)}</span>
+                                          <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.d, config.criteria.d)}</span>
                                       </div>
                                       <div className="flex flex-col">
                                           <div className="flex justify-between items-baseline">
-                                              <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">Effort</span>
-                                              <span className="text-xs font-black text-zinc-900">-{task.e}</span>
+                                              <span className="text-[7px] lg:text-[9px] font-black text-amber-500 uppercase tracking-widest">Effort</span>
+                                              <span className="text-[9px] lg:text-xs font-black text-zinc-900">-{task.e}</span>
                                           </div>
-                                          <div className="w-full h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1.5">
+                                          <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
                                               <div style={{ width: `${(task.e / 5) * 100}%` }} className="h-full bg-amber-400" />
                                           </div>
-                                          <span className="text-[10px] font-bold text-zinc-400 mt-1.5 truncate">{getLabel(task.e, config.criteria.e)}</span>
+                                          <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.e, config.criteria.e)}</span>
                                       </div>
                                   </div>
                               </div>
