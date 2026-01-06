@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, RotateCcw, Save, BookOpen, Sliders, Plus, Trash2, ArrowDownWideNarrow } from 'lucide-react';
 import { AppConfig, ReferenceItem } from '../types';
 import { CriteriaCard } from './CriteriaCard';
-import { DEFAULT_CONFIG } from '../utils';
+import { DEFAULT_CONFIG, extractValuesFromCriteria } from '../utils';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -34,44 +34,66 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
   const handleDefaultValueChange = (key: keyof AppConfig['defaultValues'], val: string) => {
     const num = parseFloat(val);
     if (isNaN(num)) return;
-    const limits: Record<keyof AppConfig['defaultValues'], { min: number; max: number; step: number }> = {
-      m: { min: 1, max: 10, step: 1 },
-      a: { min: 1, max: 10, step: 1 },
-      d: { min: 1.0, max: 2.0, step: 0.1 },
-      e: { min: 1, max: 5, step: 1 },
-    };
-    const { min, max, step } = limits[key];
-    const clamped = Math.min(max, Math.max(min, num));
-    const rounded = key === 'd' ? parseFloat(clamped.toFixed(1)) : Math.round(clamped / step) * step;
+    const validValues = localConfig.ranges[key].values;
+    
+    // 가장 가까운 유효한 값 찾기
+    if (validValues.length === 0) return;
+    
+    const closest = validValues.reduce((prev, curr) => 
+      Math.abs(curr - num) < Math.abs(prev - num) ? curr : prev
+    );
+    
     setLocalConfig(prev => ({
       ...prev,
-      defaultValues: { ...prev.defaultValues, [key]: rounded }
+      defaultValues: { ...prev.defaultValues, [key]: closest }
     }));
   };
 
   const handleCriteriaChange = (category: keyof AppConfig['criteria'], index: number, field: keyof ReferenceItem, value: string) => {
     const newCriteria = [...localConfig.criteria[category]];
     newCriteria[index] = { ...newCriteria[index], [field]: value };
+    
+    // Criteria 변경 시 자동으로 ranges 업데이트
+    const newRanges = {
+      ...localConfig.ranges,
+      [category]: { values: extractValuesFromCriteria(newCriteria) }
+    };
+    
     setLocalConfig(prev => ({
       ...prev,
-      criteria: { ...prev.criteria, [category]: newCriteria }
+      criteria: { ...prev.criteria, [category]: newCriteria },
+      ranges: newRanges
     }));
   };
 
   const addCriteriaRow = (category: keyof AppConfig['criteria']) => {
     const newCriteria = [...localConfig.criteria[category]];
     newCriteria.push({ range: '', label: 'New Rule', description: '' });
+    
+    const newRanges = {
+      ...localConfig.ranges,
+      [category]: { values: extractValuesFromCriteria(newCriteria) }
+    };
+    
     setLocalConfig(prev => ({
       ...prev,
-      criteria: { ...prev.criteria, [category]: newCriteria }
+      criteria: { ...prev.criteria, [category]: newCriteria },
+      ranges: newRanges
     }));
   };
 
   const removeCriteriaRow = (category: keyof AppConfig['criteria'], index: number) => {
     const newCriteria = localConfig.criteria[category].filter((_, i) => i !== index);
+    
+    const newRanges = {
+      ...localConfig.ranges,
+      [category]: { values: extractValuesFromCriteria(newCriteria) }
+    };
+    
     setLocalConfig(prev => ({
       ...prev,
-      criteria: { ...prev.criteria, [category]: newCriteria }
+      criteria: { ...prev.criteria, [category]: newCriteria },
+      ranges: newRanges
     }));
   };
 
@@ -83,9 +105,16 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
         };
         return getVal(b.range) - getVal(a.range);
     });
+    
+    const newRanges = {
+      ...localConfig.ranges,
+      [category]: { values: extractValuesFromCriteria(newCriteria) }
+    };
+    
     setLocalConfig(prev => ({
         ...prev,
-        criteria: { ...prev.criteria, [category]: newCriteria }
+        criteria: { ...prev.criteria, [category]: newCriteria },
+        ranges: newRanges
     }));
   };
 
@@ -159,7 +188,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                         <div className="flex items-center justify-between mb-8">
                             <h3 className="text-lg font-black text-zinc-900">Formula Weights</h3>
                             <span className="text-[10px] font-black text-zinc-400 bg-zinc-50 px-3 py-1.5 rounded-full border border-zinc-100 uppercase tracking-widest">
-                                Score = ({localConfig.weights.m}M + {localConfig.weights.a}A) × D - E
+                                Score = (({localConfig.weights.m}M + {localConfig.weights.a}A) × D - E) × 10
                             </span>
                         </div>
                         <div className="grid grid-cols-2 gap-8">
@@ -193,20 +222,30 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Initial slider positions</span>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            {(['m', 'a', 'd', 'e'] as const).map(key => (
+                            {(['m', 'a', 'd', 'e'] as const).map(key => {
+                                const validValues = localConfig.ranges[key].values;
+                                const minVal = validValues[0];
+                                const maxVal = validValues[validValues.length - 1];
+                                const isDecimal = validValues.some(v => v % 1 !== 0);
+                                
+                                return (
                                 <div key={key} className="space-y-3">
                                     <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">
                                         {key === 'm' ? 'Money' : key === 'a' ? 'Asset' : key === 'd' ? 'Deadline' : 'Effort'}
                                     </label>
                                     <input
                                         type="number"
-                                        step={key === 'd' ? 0.1 : 1}
+                                        step={isDecimal ? 0.1 : 1}
+                                        min={minVal}
+                                        max={maxVal}
                                         value={localConfig.defaultValues[key]}
                                         onChange={(e) => handleDefaultValueChange(key, e.target.value)}
                                         className="w-full px-4 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-zinc-900 font-bold focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition-all"
                                     />
+                                    <p className="text-[9px] text-zinc-400 ml-1">Available: {validValues.join(', ')}</p>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
 

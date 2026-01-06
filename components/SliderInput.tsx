@@ -3,9 +3,7 @@ import React, { useMemo, useState } from 'react';
 interface SliderInputProps {
   label: string;
   value: number;
-  min: number;
-  max: number;
-  step: number;
+  values: number[]; // 가능한 모든 값들 (discrete)
   accentColor: string; // e.g. "text-emerald-500"
   textColor: string;
   onChange: (val: number) => void;
@@ -62,9 +60,7 @@ const getColorConfig = (colorClass: string) => {
 export const SliderInput: React.FC<SliderInputProps> = ({
   label,
   value,
-  min,
-  max,
-  step,
+  values,
   accentColor, 
   textColor,
   onChange,
@@ -73,8 +69,25 @@ export const SliderInput: React.FC<SliderInputProps> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   
-  const percentage = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
+  // values가 비어있으면 기본값 사용
+  const sortedValues = values.length > 0 ? values : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const min = sortedValues[0];
+  const max = sortedValues[sortedValues.length - 1];
+  
+  // 현재 value의 index 찾기
+  const currentIndex = sortedValues.findIndex(v => Math.abs(v - value) < 0.01);
+  const validIndex = currentIndex >= 0 ? currentIndex : 0;
+  
+  // percentage는 index 기반으로 계산
+  const percentage = (validIndex / (sortedValues.length - 1)) * 100;
   const colors = getColorConfig(accentColor);
+  
+  // slider의 0~100 값을 실제 values의 index로 변환
+  const handleSliderChange = (sliderValue: number) => {
+    const index = Math.round((sliderValue / 100) * (sortedValues.length - 1));
+    const clampedIndex = Math.max(0, Math.min(sortedValues.length - 1, index));
+    onChange(sortedValues[clampedIndex]);
+  };
 
   return (
     <div className="mb-4 w-full group/slider select-none">
@@ -96,18 +109,18 @@ export const SliderInput: React.FC<SliderInputProps> = ({
       {/* Slider Container */}
       <div className="relative w-full h-8 flex items-center touch-none">
         
-        {/* Input (Invisible but interactive) */}
+        {/* Input (Invisible but interactive) - 0~100으로 정규화 */}
         <input
           type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
+          min={0}
+          max={100}
+          step={1}
+          value={percentage}
           onMouseDown={() => setIsDragging(true)}
           onMouseUp={() => setIsDragging(false)}
           onTouchStart={() => setIsDragging(true)}
           onTouchEnd={() => setIsDragging(false)}
-          onChange={(e) => onChange(parseFloat(e.target.value))}
+          onChange={(e) => handleSliderChange(parseFloat(e.target.value))}
           className="absolute w-full h-full opacity-0 cursor-pointer z-30"
         />
 

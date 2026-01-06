@@ -1,14 +1,43 @@
 import { Task, ReferenceItem, AppConfig } from './types';
 
 export const calculateMadeSScore = (m: number, a: number, d: number, e: number, weights: {m: number, a: number}): number => {
-  // Formula: (WeightM * M + WeightA * A) × D − E
+  // Formula: ((WeightM * M + WeightA * A) × D − E) × 10
   const weightedValue = (weights.m * m) + (weights.a * a);
-  const total = (weightedValue * d) - e;
+  const total = ((weightedValue * d) - e) * 10;
   return parseFloat(total.toFixed(2));
 };
 
 export const formatScore = (score: number): string => {
   return (score || 0).toFixed(1);
+};
+
+// Criteria에서 자동으로 가능한 값들 추출
+export const extractValuesFromCriteria = (criteria: ReferenceItem[]): number[] => {
+  if (!criteria || criteria.length === 0) {
+    return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  }
+
+  const allValues = new Set<number>();
+  
+  criteria.forEach(item => {
+    const parts = item.range.split(/[-~]/).map(p => parseFloat(p.trim())).filter(n => !isNaN(n));
+    
+    if (parts.length === 2) {
+      // Range: 모든 정수/소수 값 생성
+      const [start, end] = parts;
+      const isDecimal = start % 1 !== 0 || end % 1 !== 0;
+      const step = isDecimal ? 0.1 : 1;
+      
+      for (let v = start; v <= end; v = parseFloat((v + step).toFixed(1))) {
+        allValues.add(v);
+      }
+    } else if (parts.length === 1) {
+      // 단일 값
+      allValues.add(parts[0]);
+    }
+  });
+
+  return Array.from(allValues).sort((a, b) => a - b);
 };
 
 // Helper to find the matching criteria item
@@ -113,6 +142,12 @@ export const DEFAULT_CONFIG: AppConfig = {
     a: DEFAULT_A_CRITERIA,
     d: DEFAULT_D_CRITERIA,
     e: DEFAULT_E_CRITERIA,
+  },
+  ranges: {
+    m: { values: extractValuesFromCriteria(DEFAULT_M_CRITERIA) },
+    a: { values: extractValuesFromCriteria(DEFAULT_A_CRITERIA) },
+    d: { values: extractValuesFromCriteria(DEFAULT_D_CRITERIA) },
+    e: { values: extractValuesFromCriteria(DEFAULT_E_CRITERIA) },
   },
   defaultValues: {
     m: 5,

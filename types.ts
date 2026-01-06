@@ -2,10 +2,10 @@ export interface Task {
   id: string;
   title: string;
   description?: string;
-  m: number; // Money (1-10)
-  a: number; // Asset (1-10)
-  d: number; // Deadline (1.0-2.0)
-  e: number; // Effort (1-5)
+  m: number; // Money
+  a: number; // Asset
+  d: number; // Deadline
+  e: number; // Effort
   score: number;
   completed: boolean;
   createdAt: number;
@@ -21,6 +21,10 @@ export interface ReferenceItem {
 export interface WeightConfig {
   m: number;
   a: number;
+}
+
+export interface RangeConfig {
+  values: number[]; // Criteria에서 추출한 모든 가능한 값들
 }
 
 export interface DefaultValueConfig {
@@ -40,6 +44,12 @@ export interface CriteriaConfig {
 export interface AppConfig {
   weights: WeightConfig;
   criteria: CriteriaConfig;
+  ranges: {
+    m: RangeConfig;
+    a: RangeConfig;
+    d: RangeConfig;
+    e: RangeConfig;
+  };
   defaultValues: DefaultValueConfig;
 }
 

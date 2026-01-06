@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Plus, Trash2, CheckCircle2, Circle, Settings, BarChart2, Pencil, X, Command, ArrowUpRight, History, Layers, Clock, AlignLeft, Undo2, Cloud, CloudOff, RefreshCw, Copy, Check } from 'lucide-react';
 import { Task, AppConfig } from './types';
-import { calculateMadeSScore, formatScore, getDescription, getLabel, getRelativeDateLabel, DEFAULT_CONFIG } from './utils';
+import { calculateMadeSScore, formatScore, getDescription, getLabel, getRelativeDateLabel, DEFAULT_CONFIG, extractValuesFromCriteria } from './utils';
 import { SliderInput } from './components/SliderInput';
 import { SettingsPanel } from './components/SettingsPanel';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
@@ -22,11 +22,18 @@ const sanitizeConfig = (rawConfig: any): AppConfig => {
     d: rawConfig?.criteria?.d || DEFAULT_CONFIG.criteria.d,
     e: rawConfig?.criteria?.e || DEFAULT_CONFIG.criteria.e,
   };
+  // Criteria에서 자동으로 ranges 생성
+  const ranges = {
+    m: { values: extractValuesFromCriteria(criteria.m) },
+    a: { values: extractValuesFromCriteria(criteria.a) },
+    d: { values: extractValuesFromCriteria(criteria.d) },
+    e: { values: extractValuesFromCriteria(criteria.e) },
+  };
   const defaultValues = {
     ...DEFAULT_CONFIG.defaultValues,
     ...(rawConfig?.defaultValues || {})
   };
-  return { weights, criteria, defaultValues };
+  return { weights, criteria, ranges, defaultValues };
 };
 
 const sanitizeTasks = (rawTasks: any): Task[] => {
@@ -123,6 +130,14 @@ export default function App() {
   // Keep refs updated
   useEffect(() => { tasksRef.current = tasks; }, [tasks]);
   useEffect(() => { configRef.current = config; }, [config]);
+
+  // Config 변경 시 모든 task의 점수 재계산
+  useEffect(() => {
+    setTasks(prev => prev.map(task => ({
+      ...task,
+      score: calculateMadeSScore(task.m, task.a, task.d, task.e, config.weights)
+    })));
+  }, [config.weights]);
 
   // LocalStorage persistence (fallback)
   useEffect(() => {
@@ -429,6 +444,22 @@ export default function App() {
     }
   }
 
+  // 범위 벗어난 값 체크
+  const isValueOutOfRange = (value: number, key: 'm' | 'a' | 'd' | 'e'): boolean => {
+    const validValues = config.ranges[key].values;
+    // 값이 가능한 값 목록에 없으면 out of range
+    return !validValues.some(v => Math.abs(v - value) < 0.01);
+  };
+
+  const getTaskValidationErrors = (task: Task): string[] => {
+    const errors: string[] = [];
+    if (isValueOutOfRange(task.m, 'm')) errors.push(`Money (${task.m})`);
+    if (isValueOutOfRange(task.a, 'a')) errors.push(`Asset (${task.a})`);
+    if (isValueOutOfRange(task.d, 'd')) errors.push(`Deadline (${task.d})`);
+    if (isValueOutOfRange(task.e, 'e')) errors.push(`Effort (${task.e})`);
+    return errors;
+  };
+
   const sortedTasks = useMemo(() => {
     const list = activeTab === 'queue' 
         ? tasks.filter(t => !t.completed) 
@@ -621,7 +652,8 @@ export default function App() {
                 <div className="space-y-5 lg:space-y-6">
                   <SliderInput 
                     label="Money"
-                    value={m} min={1} max={10} step={1} 
+                    value={m} 
+                    values={config.ranges.m.values}
                     accentColor="text-emerald-500"
                     textColor="text-emerald-600"
                     onChange={setM} 
@@ -629,7 +661,8 @@ export default function App() {
                   />
                   <SliderInput 
                     label="Asset"
-                    value={a} min={1} max={10} step={1} 
+                    value={a} 
+                    values={config.ranges.a.values}
                     accentColor="text-violet-500"
                     textColor="text-violet-600"
                     onChange={setA} 
@@ -638,7 +671,8 @@ export default function App() {
                   <div className="grid grid-cols-2 gap-4 lg:gap-6">
                     <SliderInput 
                       label="Deadline" 
-                      value={d} min={1.0} max={2.0} step={0.1} 
+                      value={d} 
+                      values={config.ranges.d.values}
                       accentColor="text-red-500"
                       textColor="text-red-600"
                       onChange={setD} 
@@ -646,11 +680,11 @@ export default function App() {
                     />
                     <SliderInput 
                       label="Effort" 
-                      value={6 - e} min={1} max={5} step={1} 
+                      value={e}
+                      values={[...config.ranges.e.values].reverse()}
                       accentColor="text-amber-500"
                       textColor="text-amber-600"
-                      onChange={(val) => setE(6 - val)} 
-                      displayValue={e}
+                      onChange={setE}
                       subLabel={getDescription(e, config.criteria.e)}
                     />
                   </div>
@@ -689,8 +723,13 @@ export default function App() {
           <div className="lg:col-span-7 space-y-6 lg:space-y-8">
             
             {/* 🎯 MAIN FOCUS AREA: The Rank #1 Task */}
-            {activeTab === 'queue' && sortedTasks.length > 0 && (
-              <div className={`relative bg-white rounded-2xl border border-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] overflow-hidden animate-in slide-in-from-top-2 duration-500 flex transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 scale-[0.98] translate-y-2' : ''}`}>
+            {activeTab === 'queue' && sortedTasks.length > 0 && (() => {
+              const topTaskErrors = getTaskValidationErrors(sortedTasks[0]);
+              const topTaskHasErrors = topTaskErrors.length > 0;
+              return (
+              <div className={`relative bg-white rounded-2xl overflow-hidden animate-in slide-in-from-top-2 duration-500 flex transition-all duration-700 ${
+                topTaskHasErrors ? 'ring-2 ring-red-500/50 border-red-200' : 'border border-zinc-100'
+              } shadow-[0_4px_20px_rgba(0,0,0,0.02)] ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 scale-[0.98] translate-y-2' : ''}`}>
                 {/* 🧬 Mini DNA Sidebar Accent - Full height */}
                 <div className="w-1 lg:w-1.5 shrink-0 flex flex-col opacity-40">
                   <div style={{ flex: sortedTasks[0].m }} className="bg-emerald-400" />
@@ -726,6 +765,12 @@ export default function App() {
                           <p className={`text-xs lg:text-sm font-medium line-clamp-3 lg:line-clamp-2 leading-relaxed transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'text-emerald-300 opacity-30 translate-x-2' : 'text-zinc-400'}`}>
                             {sortedTasks[0].description}
                           </p>
+                        )}
+                        {topTaskHasErrors && (
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-xl mt-2">
+                            <span className="text-[10px] lg:text-xs font-bold text-red-600 uppercase tracking-wider">⚠️ Out of range:</span>
+                            <span className="text-[10px] lg:text-xs font-medium text-red-500">{topTaskErrors.join(', ')}</span>
+                          </div>
                         )}
                       </div>
 
@@ -785,7 +830,8 @@ export default function App() {
                   </div>
                 </div>
               </div>
-            )}
+              );
+            })()}
 
             {/* List Controls */}
             <div className="flex flex-row items-center justify-between gap-4 px-2">
@@ -846,6 +892,8 @@ export default function App() {
 
                   const isCompleting = completingIds.has(task.id);
                   const displayTimestamp = getTaskTimestamp(task);
+                  const validationErrors = getTaskValidationErrors(task);
+                  const hasErrors = validationErrors.length > 0;
 
                   return (
                   <React.Fragment key={task.id}>
@@ -861,7 +909,7 @@ export default function App() {
                         task.completed 
                           ? 'opacity-60 bg-zinc-50 hover:opacity-100 hover:bg-white hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-200/40 hover:-translate-y-0.5' 
                           : 'hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-200/40 hover:-translate-y-0.5'
-                        } ${editingId === task.id ? 'ring-2 ring-indigo-500/50' : 'border border-zinc-100'} ${isCompleting ? 'opacity-0 scale-[0.98] translate-x-12' : ''}`}
+                        } ${editingId === task.id ? 'ring-2 ring-indigo-500/50' : hasErrors ? 'ring-2 ring-red-500/50 border-red-200' : 'border border-zinc-100'} ${isCompleting ? 'opacity-0 scale-[0.98] translate-x-12' : ''}`}
                     >
                         <div className="p-4 lg:p-5 pl-5 lg:pl-6">
                             <div className="flex items-center gap-4 lg:gap-5">
@@ -896,6 +944,13 @@ export default function App() {
                                             }`}>
                                               {task.description}
                                             </p>
+                                          )}
+
+                                          {hasErrors && (
+                                            <div className="flex items-center gap-2 px-2 py-1 bg-red-50 border border-red-200 rounded-lg mb-1">
+                                              <span className="text-[9px] lg:text-[10px] font-bold text-red-600 uppercase tracking-wider">⚠️ Out of range:</span>
+                                              <span className="text-[9px] lg:text-[10px] font-medium text-red-500">{validationErrors.join(', ')}</span>
+                                            </div>
                                           )}
 
                                           <div className={`flex items-center gap-3 lg:gap-4 transition-all duration-700 ${isCompleting ? 'opacity-0 -translate-y-2' : ''}`}>
