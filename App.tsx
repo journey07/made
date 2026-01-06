@@ -511,7 +511,7 @@ export default function App() {
               className="text-sm sm:text-base font-bold tracking-tight text-zinc-900"
               style={{ fontFamily: "'Tinos', 'Inter', serif" }}
             >
-              MADE <span className="hidden xs:inline text-zinc-400 font-normal mx-1">|</span> <span className="hidden xs:inline text-zinc-500">Prioritize your time</span>
+              MADE <span className="text-zinc-400 font-normal mx-1">|</span> <span className="text-zinc-500 font-normal">Prioritize your time</span>
             </h1>
           </div>
           
@@ -856,7 +856,7 @@ export default function App() {
                     >
                         <Layers size={12} lg:size={14} />
                         Queue
-                        <span className={`ml-1 text-[8px] lg:text-[9px] px-1.5 py-0.5 rounded-full ${activeTab === 'queue' ? 'bg-zinc-900 text-white' : 'bg-zinc-200 text-zinc-500'}`}>
+                        <span className={`ml-1 text-[8px] lg:text-[9px] px-1 h-3.5 lg:h-4 min-w-[14px] lg:min-w-[16px] inline-flex items-center justify-center rounded-full leading-none ${activeTab === 'queue' ? 'bg-zinc-900 text-white' : 'bg-zinc-200 text-zinc-500'}`}>
                             {tasks.filter(t => !t.completed).length}
                         </span>
                     </button>
@@ -872,10 +872,6 @@ export default function App() {
                         History
                     </button>
                 </div>
-              
-              {tasks.length > 0 && activeTab === 'queue' && (
-                  <button onClick={clearAll} className="text-[8px] lg:text-[9px] font-bold text-zinc-300 hover:text-red-400 tracking-widest uppercase transition-colors px-2">Reset</button>
-              )}
             </div>
 
             {/* Tasks Rendering */}
