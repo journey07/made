@@ -460,6 +460,16 @@ export default function App() {
     return errors;
   };
 
+  // 프로그레스 바 퍼센트 계산
+  const getValuePercentage = (value: number, key: 'm' | 'a' | 'd' | 'e'): number => {
+    const values = config.ranges[key].values;
+    if (values.length === 0) return 0;
+    const min = values[0];
+    const max = values[values.length - 1];
+    if (max === min) return 100;
+    return Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
+  };
+
   const sortedTasks = useMemo(() => {
     const list = activeTab === 'queue' 
         ? tasks.filter(t => !t.completed) 
@@ -732,10 +742,10 @@ export default function App() {
               } shadow-[0_4px_20px_rgba(0,0,0,0.02)] ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 scale-[0.98] translate-y-2' : ''}`}>
                 {/* 🧬 Mini DNA Sidebar Accent - Full height */}
                 <div className="w-1 lg:w-1.5 shrink-0 flex flex-col opacity-40">
-                  <div style={{ flex: sortedTasks[0].m }} className="bg-emerald-400" />
-                  <div style={{ flex: sortedTasks[0].a }} className="bg-violet-400" />
-                  <div style={{ flex: sortedTasks[0].d }} className="bg-red-400" />
-                  <div style={{ flex: sortedTasks[0].e }} className="bg-amber-400" />
+                  <div style={{ flex: getValuePercentage(sortedTasks[0].m, 'm') }} className="bg-emerald-400" />
+                  <div style={{ flex: getValuePercentage(sortedTasks[0].a, 'a') }} className="bg-violet-400" />
+                  <div style={{ flex: getValuePercentage(sortedTasks[0].d, 'd') }} className="bg-red-400" />
+                  <div style={{ flex: getValuePercentage(sortedTasks[0].e, 'e') }} className="bg-amber-400" />
                 </div>
 
                 <div className="flex-1 relative">
@@ -959,16 +969,16 @@ export default function App() {
                                               {/* 🧬 Mini DNA Strip: Responsive width */}
                                               <div className={`flex gap-1 lg:gap-2 items-center h-1 lg:h-1.5 transition-opacity duration-200 ${!task.completed ? 'group-hover:opacity-0' : 'opacity-40 group-hover:opacity-0'}`}>
                                                 <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
-                                                  <div style={{ width: `${(task.m / 10) * 100}%` }} className="h-full bg-emerald-400" />
+                                                  <div style={{ width: `${getValuePercentage(task.m, 'm')}%` }} className="h-full bg-emerald-400" />
                                                 </div>
                                                 <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
-                                                  <div style={{ width: `${(task.a / 10) * 100}%` }} className="h-full bg-violet-400" />
+                                                  <div style={{ width: `${getValuePercentage(task.a, 'a')}%` }} className="h-full bg-violet-400" />
                                                 </div>
                                                 <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
-                                                  <div style={{ width: `${((task.d - 1) / 1) * 100}%` }} className="h-full bg-red-400" />
+                                                  <div style={{ width: `${getValuePercentage(task.d, 'd')}%` }} className="h-full bg-red-400" />
                                                 </div>
                                                 <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
-                                                  <div style={{ width: `${(task.e / 5) * 100}%` }} className="h-full bg-amber-400" />
+                                                  <div style={{ width: `${getValuePercentage(task.e, 'e')}%` }} className="h-full bg-amber-400" />
                                                 </div>
                                               </div>
                                           </div>
@@ -995,7 +1005,7 @@ export default function App() {
                                               <span className="text-[9px] lg:text-xs font-black text-zinc-900">{task.m}</span>
                                           </div>
                                           <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
-                                              <div style={{ width: `${(task.m / 10) * 100}%` }} className="h-full bg-emerald-400" />
+                                              <div style={{ width: `${getValuePercentage(task.m, 'm')}%` }} className="h-full bg-emerald-400" />
                                           </div>
                                           <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.m, config.criteria.m)}</span>
                                       </div>
@@ -1005,7 +1015,7 @@ export default function App() {
                                               <span className="text-[9px] lg:text-xs font-black text-zinc-900">{task.a}</span>
                                           </div>
                                           <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
-                                              <div style={{ width: `${(task.a / 10) * 100}%` }} className="h-full bg-violet-400" />
+                                              <div style={{ width: `${getValuePercentage(task.a, 'a')}%` }} className="h-full bg-violet-400" />
                                           </div>
                                           <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.a, config.criteria.a)}</span>
                                       </div>
@@ -1015,7 +1025,7 @@ export default function App() {
                                               <span className="text-[9px] lg:text-xs font-black text-zinc-900">x{task.d.toFixed(1)}</span>
                                           </div>
                                           <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
-                                              <div style={{ width: `${((task.d - 1) / 1) * 100}%` }} className="h-full bg-red-400" />
+                                              <div style={{ width: `${getValuePercentage(task.d, 'd')}%` }} className="h-full bg-red-400" />
                                           </div>
                                           <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.d, config.criteria.d)}</span>
                                       </div>
@@ -1025,7 +1035,7 @@ export default function App() {
                                               <span className="text-[9px] lg:text-xs font-black text-zinc-900">-{task.e}</span>
                                           </div>
                                           <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
-                                              <div style={{ width: `${(task.e / 5) * 100}%` }} className="h-full bg-amber-400" />
+                                              <div style={{ width: `${getValuePercentage(task.e, 'e')}%` }} className="h-full bg-amber-400" />
                                           </div>
                                           <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.e, config.criteria.e)}</span>
                                       </div>
