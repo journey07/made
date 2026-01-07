@@ -76,10 +76,10 @@ export default function App() {
   // Config State
   const [config, setConfig] = useState<AppConfig>(() => {
     try {
-        const saved = localStorage.getItem(CONFIG_KEY);
-        return saved ? sanitizeConfig(JSON.parse(saved)) : DEFAULT_CONFIG;
+      const saved = localStorage.getItem(CONFIG_KEY);
+      return saved ? sanitizeConfig(JSON.parse(saved)) : DEFAULT_CONFIG;
     } catch (e) {
-        return DEFAULT_CONFIG;
+      return DEFAULT_CONFIG;
     }
   });
 
@@ -114,13 +114,13 @@ export default function App() {
   const [a, setA] = useState(() => config.defaultValues.a ?? DEFAULT_CONFIG.defaultValues.a);
   const [d, setD] = useState(() => config.defaultValues.d ?? DEFAULT_CONFIG.defaultValues.d);
   const [e, setE] = useState(() => config.defaultValues.e ?? DEFAULT_CONFIG.defaultValues.e);
-  
+
   // UI State
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('queue');
   const [toast, setToast] = useState<ToastState>(null);
   const [showSignature, setShowSignature] = useState(false);
-  
+
   const formRef = useRef<HTMLDivElement>(null);
   const deletedTaskRef = useRef<Task | null>(null);
   const signatureTimerRef = useRef<number | null>(null);
@@ -158,7 +158,7 @@ export default function App() {
   }, [recoveryCode]);
 
   // ============ Supabase 자동 동기화 ============
-  
+
   // 1) 앱 시작: 복구 코드가 있으면 DB에서 로드, 없으면 새로 생성
   useEffect(() => {
     if (!isSupabaseConfigured() || !supabase) {
@@ -169,9 +169,9 @@ export default function App() {
 
     const initSync = async () => {
       setSyncStatus('loading');
-      
+
       let code = recoveryCode;
-      
+
       // 복구 코드 없으면 새로 생성
       if (!code) {
         code = generateRecoveryCode();
@@ -202,7 +202,7 @@ export default function App() {
               tasks: tasksRef.current,
               config: configRef.current,
             });
-          
+
           if (insertError) throw insertError;
           setSyncStatus('synced');
         }
@@ -222,7 +222,7 @@ export default function App() {
     if (!supabase || !recoveryCode || isInitialLoad || syncStatus === 'offline') return;
 
     setSyncStatus('saving');
-    
+
     const handle = window.setTimeout(async () => {
       try {
         const { error } = await supabase
@@ -250,7 +250,7 @@ export default function App() {
       showToast('Supabase 설정이 필요합니다', 'info');
       return;
     }
-    
+
     const cleanCode = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
     if (cleanCode.length !== 8) {
       showToast('복구 코드는 8자리입니다', 'info');
@@ -258,7 +258,7 @@ export default function App() {
     }
 
     setSyncStatus('loading');
-    
+
     try {
       const { data, error } = await supabase
         .from('planner_data')
@@ -302,8 +302,8 @@ export default function App() {
   // Toast Timer
   useEffect(() => {
     if (toast) {
-        const timer = setTimeout(() => setToast(null), 4000);
-        return () => clearTimeout(timer);
+      const timer = setTimeout(() => setToast(null), 4000);
+      return () => clearTimeout(timer);
     }
   }, [toast]);
 
@@ -312,12 +312,12 @@ export default function App() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
         if (title.trim()) {
-           document.getElementById('mades-submit-btn')?.click();
+          document.getElementById('mades-submit-btn')?.click();
         }
         return;
       }
 
-      if (event.shiftKey && event.key.toLowerCase() === 'm') {
+      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'm') {
         event.preventDefault();
         setShowSignature(true);
         if (signatureTimerRef.current) {
@@ -333,12 +333,12 @@ export default function App() {
   const currentScore = useMemo(() => calculateMadeSScore(m, a, d, e, config.weights), [m, a, d, e, config.weights]);
 
   const showToast = (message: string, type: 'success' | 'info' = 'success', action?: { label: string; onClick: () => void }) => {
-      setToast({ message, type, action });
+    setToast({ message, type, action });
   };
 
   const handleConfigSave = (newConfig: AppConfig) => {
-      setConfig(sanitizeConfig(newConfig));
-      showToast("Configuration saved successfully");
+    setConfig(sanitizeConfig(newConfig));
+    showToast("Configuration saved successfully");
   };
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -346,27 +346,27 @@ export default function App() {
     if (!title.trim()) return;
 
     if (editingId) {
-        setTasks(prev => prev.map(t => {
-            if (t.id === editingId) {
-                return { ...t, title, description, m, a, d, e, score: currentScore };
-            }
-            return t;
-        }));
-        setEditingId(null);
-        showToast("Task updated successfully");
+      setTasks(prev => prev.map(t => {
+        if (t.id === editingId) {
+          return { ...t, title, description, m, a, d, e, score: currentScore };
+        }
+        return t;
+      }));
+      setEditingId(null);
+      showToast("Task updated successfully");
     } else {
-        const newTask: Task = {
-            id: generateId(),
-            title, description, m, a, d, e,
-            score: currentScore,
-            completed: false,
-            createdAt: Date.now(),
-            completedAt: undefined,
-        };
-        setTasks(prev => [...prev, newTask]);
-        showToast("Task added to queue");
+      const newTask: Task = {
+        id: generateId(),
+        title, description, m, a, d, e,
+        score: currentScore,
+        completed: false,
+        createdAt: Date.now(),
+        completedAt: undefined,
+      };
+      setTasks(prev => [...prev, newTask]);
+      showToast("Task added to queue");
     }
-    
+
     resetForm();
   };
 
@@ -419,28 +419,28 @@ export default function App() {
   };
 
   const restoreDeletedTask = () => {
-      if (deletedTaskRef.current) {
-          setTasks(prev => [...prev, deletedTaskRef.current!]);
-          deletedTaskRef.current = null;
-          setToast(null);
-      }
+    if (deletedTaskRef.current) {
+      setTasks(prev => [...prev, deletedTaskRef.current!]);
+      deletedTaskRef.current = null;
+      setToast(null);
+    }
   };
 
   const deleteTask = (id: string) => {
     const taskToDelete = tasks.find(t => t.id === id);
     if (taskToDelete) {
-        deletedTaskRef.current = taskToDelete;
-        if (editingId === id) cancelEditing();
-        setTasks(prev => prev.filter(t => t.id !== id));
-        showToast("Task deleted", "info", { label: "Undo", onClick: restoreDeletedTask });
+      deletedTaskRef.current = taskToDelete;
+      if (editingId === id) cancelEditing();
+      setTasks(prev => prev.filter(t => t.id !== id));
+      showToast("Task deleted", "info", { label: "Undo", onClick: restoreDeletedTask });
     }
   };
-  
+
   const clearAll = () => {
-    if(window.confirm("Are you sure you want to clear all tasks?")) {
-        setTasks([]);
-        cancelEditing();
-        showToast("All tasks cleared");
+    if (window.confirm("Are you sure you want to clear all tasks?")) {
+      setTasks([]);
+      cancelEditing();
+      showToast("All tasks cleared");
     }
   }
 
@@ -471,15 +471,15 @@ export default function App() {
   };
 
   const sortedTasks = useMemo(() => {
-    const list = activeTab === 'queue' 
-        ? tasks.filter(t => !t.completed) 
-        : tasks.filter(t => t.completed);
+    const list = activeTab === 'queue'
+      ? tasks.filter(t => !t.completed)
+      : tasks.filter(t => t.completed);
 
     return list.sort((a, b) => {
-       if (activeTab === 'history') {
-          return getTaskTimestamp(b) - getTaskTimestamp(a);
-       }
-       return b.score - a.score;
+      if (activeTab === 'history') {
+        return getTaskTimestamp(b) - getTaskTimestamp(a);
+      }
+      return b.score - a.score;
     });
   }, [tasks, activeTab]);
 
@@ -499,7 +499,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-zinc-900 font-sans selection:bg-indigo-500 selection:text-white pb-32">
-      
+
       {/* Navbar - Cleaner & Floating */}
       <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-zinc-200/50">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
@@ -507,38 +507,36 @@ export default function App() {
             <div className="p-1 sm:p-1.5 bg-zinc-900 rounded-lg sm:rounded-xl shadow-lg shadow-zinc-900/20">
               <img src={logo} alt="MADE" className="w-5 h-5 sm:w-6 sm:h-6 object-cover" />
             </div>
-            <h1 
+            <h1
               className="text-sm sm:text-base font-bold tracking-tight text-zinc-900"
               style={{ fontFamily: "'Tinos', 'Inter', serif" }}
             >
               MADE <span className="text-zinc-400 font-normal mx-1">|</span> <span className="text-zinc-500 font-normal">Prioritize your time</span>
             </h1>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <div
-              className={`hidden sm:flex items-center gap-1 px-3 py-1 rounded-full bg-zinc-900 text-white text-[10px] font-bold tracking-wider transition-all duration-300 ${
-                showSignature ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'
-              }`}
+              className={`hidden sm:flex items-center gap-1 px-3 py-1 rounded-full bg-zinc-900 text-white text-[10px] font-bold tracking-wider transition-all duration-300 ${showSignature ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'
+                }`}
               style={{ fontFamily: "'Tinos', 'Inter', serif" }}
             >
               BY INJEON ✨
             </div>
 
-            <button 
+            <button
               onClick={() => setShowRecoveryModal(true)}
-              className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-full text-[10px] lg:text-xs font-bold transition-all duration-200 border ${
-                syncStatus === 'synced' ? 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100' :
+              className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-full text-[10px] lg:text-xs font-bold transition-all duration-200 border ${syncStatus === 'synced' ? 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100' :
                 syncStatus === 'saving' ? 'bg-amber-50 border-amber-200 text-amber-600' :
-                syncStatus === 'error' ? 'bg-red-50 border-red-100 text-red-600' :
-                'bg-zinc-50 border-zinc-100 text-zinc-400'
-              }`}
+                  syncStatus === 'error' ? 'bg-red-50 border-red-100 text-red-600' :
+                    'bg-zinc-50 border-zinc-100 text-zinc-400'
+                }`}
             >
               {syncDisplay.icon}
               <span className="hidden sm:inline">{syncDisplay.text}</span>
             </button>
 
-            <button 
+            <button
               onClick={() => setShowSettings(true)}
               className="p-2 rounded-full text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-all"
               title="Settings"
@@ -558,14 +556,14 @@ export default function App() {
                 <Cloud size={18} className="text-indigo-500" />
                 Cloud Sync
               </h2>
-              <button 
-                onClick={() => setShowRecoveryModal(false)} 
+              <button
+                onClick={() => setShowRecoveryModal(false)}
                 className="p-2 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 rounded-full transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-8">
               {recoveryCode && (
                 <div className="space-y-3">
@@ -574,16 +572,15 @@ export default function App() {
                     <div className="w-full px-6 py-5 bg-zinc-50 border border-zinc-100 rounded-2xl text-2xl font-mono font-black text-zinc-900 tracking-[0.2em] text-center select-all shadow-inner">
                       {recoveryCode}
                     </div>
-                    <button 
-                      onClick={() => { 
-                        navigator.clipboard.writeText(recoveryCode!); 
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(recoveryCode!);
                         setIsCopied(true);
                         setTimeout(() => setIsCopied(false), 2000);
-                        showToast('Code copied to clipboard'); 
-                      }} 
-                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-3 rounded-xl transition-all duration-300 shadow-sm flex items-center justify-center ${
-                        isCopied ? 'bg-emerald-500 text-white' : 'bg-zinc-900 text-white hover:bg-zinc-800'
-                      }`}
+                        showToast('Code copied to clipboard');
+                      }}
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-3 rounded-xl transition-all duration-300 shadow-sm flex items-center justify-center ${isCopied ? 'bg-emerald-500 text-white' : 'bg-zinc-900 text-white hover:bg-zinc-800'
+                        }`}
                       title="Copy code"
                     >
                       {isCopied ? <Check size={18} /> : <Copy size={18} />}
@@ -598,17 +595,17 @@ export default function App() {
               <div className="space-y-3 pt-2 border-t border-zinc-100">
                 <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Restore from code</label>
                 <div className="flex flex-col gap-2">
-                  <input 
-                    type="text" 
-                    value={recoveryInput} 
-                    onChange={(e) => setRecoveryInput(e.target.value.toUpperCase())} 
-                    placeholder="ENTER CODE" 
-                    maxLength={8} 
-                    className="w-full px-4 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl text-lg font-mono font-black text-center tracking-[0.2em] focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-inner placeholder:text-zinc-200" 
+                  <input
+                    type="text"
+                    value={recoveryInput}
+                    onChange={(e) => setRecoveryInput(e.target.value.toUpperCase())}
+                    placeholder="ENTER CODE"
+                    maxLength={8}
+                    className="w-full px-4 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl text-lg font-mono font-black text-center tracking-[0.2em] focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-inner placeholder:text-zinc-200"
                   />
-                  <button 
-                    onClick={() => restoreFromCode(recoveryInput)} 
-                    disabled={recoveryInput.length !== 8} 
+                  <button
+                    onClick={() => restoreFromCode(recoveryInput)}
+                    disabled={recoveryInput.length !== 8}
                     className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-30 disabled:shadow-none transition-all transform active:scale-[0.98]"
                   >
                     Restore Data
@@ -624,22 +621,21 @@ export default function App() {
 
       <main className="max-w-[1440px] mx-auto px-4 sm:px-8 py-6 lg:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-          
+
           {/* LEFT: Input Section */}
           <div className="lg:col-span-5 relative" ref={formRef}>
-            <div className={`bg-white rounded-2xl lg:rounded-3xl p-5 lg:p-8 shadow-[0_2px_15px_rgb(0,0,0,0.04)] border border-zinc-100 transition-all duration-500 lg:sticky lg:top-24 ${
-                editingId ? 'ring-2 ring-indigo-500/30' : ''
-            }`}>
+            <div className={`bg-white rounded-2xl lg:rounded-3xl p-5 lg:p-8 shadow-[0_2px_15px_rgb(0,0,0,0.04)] border border-zinc-100 transition-all duration-500 lg:sticky lg:top-24 ${editingId ? 'ring-2 ring-indigo-500/30' : ''
+              }`}>
               <div className="flex justify-between items-center mb-5 lg:mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-1 h-5 rounded-full ${editingId ? 'bg-indigo-500' : 'bg-zinc-900'}`}></div>
-                    <h2 className="text-lg lg:text-xl font-bold text-zinc-900 tracking-tight">{editingId ? "Edit Task" : "New Task"}</h2>
-                  </div>
-                  {editingId && (
-                      <button onClick={cancelEditing} className="p-2 text-zinc-400 hover:text-zinc-600 transition-colors"><X size={18} /></button>
-                  )}
+                <div className="flex items-center gap-3">
+                  <div className={`w-1 h-5 rounded-full ${editingId ? 'bg-indigo-500' : 'bg-zinc-900'}`}></div>
+                  <h2 className="text-lg lg:text-xl font-bold text-zinc-900 tracking-tight">{editingId ? "Edit Task" : "New Task"}</h2>
+                </div>
+                {editingId && (
+                  <button onClick={cancelEditing} className="p-2 text-zinc-400 hover:text-zinc-600 transition-colors"><X size={18} /></button>
+                )}
               </div>
-              
+
               <form onSubmit={handleSubmit} className="space-y-5 lg:space-y-8">
                 <div className="space-y-4">
                   <input
@@ -651,45 +647,45 @@ export default function App() {
                     autoFocus
                   />
                   <textarea
-                     value={description}
-                     onChange={(e) => setDescription(e.target.value)}
-                     placeholder="Add details (optional)"
-                     rows={1}
-                     className="w-full text-xs lg:text-sm font-medium bg-transparent border-b border-zinc-100 py-2 placeholder-zinc-300 focus:outline-none focus:border-indigo-500 transition-all duration-300 resize-none overflow-hidden"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Add details (optional)"
+                    rows={1}
+                    className="w-full text-xs lg:text-sm font-medium bg-transparent border-b border-zinc-100 py-2 placeholder-zinc-300 focus:outline-none focus:border-indigo-500 transition-all duration-300 resize-none overflow-hidden"
                   />
                 </div>
 
                 <div className="space-y-5 lg:space-y-6">
-                  <SliderInput 
+                  <SliderInput
                     label="Money"
-                    value={m} 
+                    value={m}
                     values={config.ranges.m.values}
                     accentColor="text-emerald-500"
                     textColor="text-emerald-600"
-                    onChange={setM} 
+                    onChange={setM}
                     subLabel={getDescription(m, config.criteria.m)}
                   />
-                  <SliderInput 
+                  <SliderInput
                     label="Asset"
-                    value={a} 
+                    value={a}
                     values={config.ranges.a.values}
                     accentColor="text-violet-500"
                     textColor="text-violet-600"
-                    onChange={setA} 
+                    onChange={setA}
                     subLabel={getDescription(a, config.criteria.a)}
                   />
                   <div className="grid grid-cols-2 gap-4 lg:gap-6">
-                    <SliderInput 
-                      label="Deadline" 
-                      value={d} 
+                    <SliderInput
+                      label="Deadline"
+                      value={d}
                       values={config.ranges.d.values}
                       accentColor="text-red-500"
                       textColor="text-red-600"
-                      onChange={setD} 
+                      onChange={setD}
                       subLabel={getDescription(parseFloat(d.toFixed(1)), config.criteria.d)}
                     />
-                    <SliderInput 
-                      label="Effort" 
+                    <SliderInput
+                      label="Effort"
                       value={e}
                       values={[...config.ranges.e.values].reverse()}
                       accentColor="text-amber-500"
@@ -701,29 +697,28 @@ export default function App() {
                 </div>
 
                 <div className="pt-4 lg:pt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 lg:gap-6 border-t border-zinc-50 mt-4">
-                    <div className="flex flex-row sm:flex-col items-baseline sm:items-start justify-between sm:justify-start shrink-0">
-                      <span className="text-[9px] lg:text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-0.5">Priority Score</span>
-                      <div className="flex items-baseline gap-0.5">
-                          <span className="text-2xl lg:text-3xl font-black text-zinc-900 tracking-tighter">{formatScore(currentScore)}</span>
-                          <span className="text-[9px] lg:text-[10px] font-bold text-zinc-400 uppercase">PTS</span>
-                      </div>
+                  <div className="flex flex-row sm:flex-col items-baseline sm:items-start justify-between sm:justify-start shrink-0">
+                    <span className="text-[9px] lg:text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-0.5">Priority Score</span>
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-2xl lg:text-3xl font-black text-zinc-900 tracking-tighter">{formatScore(currentScore)}</span>
+                      <span className="text-[9px] lg:text-[10px] font-bold text-zinc-400 uppercase">PTS</span>
                     </div>
-                    <button
-                      id="mades-submit-btn"
-                      type="submit"
-                      disabled={!title}
-                      className={`px-6 lg:px-10 group rounded-xl py-3.5 lg:py-4 font-bold text-sm shadow-md disabled:opacity-30 disabled:shadow-none transition-all duration-300 flex items-center justify-center gap-2 ${
-                          editingId 
-                              ? 'bg-indigo-600 text-white shadow-indigo-100' 
-                              : 'bg-zinc-900 text-white shadow-zinc-100'
+                  </div>
+                  <button
+                    id="mades-submit-btn"
+                    type="submit"
+                    disabled={!title}
+                    className={`px-6 lg:px-10 group rounded-xl py-3.5 lg:py-4 font-bold text-sm shadow-md disabled:opacity-30 disabled:shadow-none transition-all duration-300 flex items-center justify-center gap-2 ${editingId
+                      ? 'bg-indigo-600 text-white shadow-indigo-100'
+                      : 'bg-zinc-900 text-white shadow-zinc-100'
                       }`}
-                    >
-                      <span>{editingId ? "Update Task" : "Add to Queue"}</span>
-                      <div className="hidden lg:flex items-center gap-1 opacity-40 text-[9px] bg-white/20 px-1.5 py-0.5 rounded">
-                          <Command size={9} />
-                          <span>↵</span>
-                      </div>
-                    </button>
+                  >
+                    <span>{editingId ? "Update Task" : "Add to Queue"}</span>
+                    <div className="hidden lg:flex items-center gap-1 opacity-40 text-[9px] bg-white/20 px-1.5 py-0.5 rounded">
+                      <Command size={9} />
+                      <span>↵</span>
+                    </div>
+                  </button>
                 </div>
               </form>
             </div>
@@ -731,147 +726,144 @@ export default function App() {
 
           {/* RIGHT: List Section */}
           <div className="lg:col-span-7 space-y-6 lg:space-y-8">
-            
+
             {/* 🎯 MAIN FOCUS AREA: The Rank #1 Task */}
             {activeTab === 'queue' && sortedTasks.length > 0 && (() => {
               const topTaskErrors = getTaskValidationErrors(sortedTasks[0]);
               const topTaskHasErrors = topTaskErrors.length > 0;
               return (
-              <div className={`relative bg-white rounded-2xl overflow-hidden animate-in slide-in-from-top-2 duration-500 flex transition-all duration-700 ${
-                topTaskHasErrors ? 'ring-2 ring-red-500/50 border-red-200' : 'border border-zinc-100'
-              } shadow-[0_4px_20px_rgba(0,0,0,0.02)] ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 scale-[0.98] translate-y-2' : ''}`}>
-                {/* 🧬 Mini DNA Sidebar Accent - Full height */}
-                <div className="w-1 lg:w-1.5 shrink-0 flex flex-col opacity-40">
-                  <div style={{ flex: getValuePercentage(sortedTasks[0].m, 'm') }} className="bg-emerald-400" />
-                  <div style={{ flex: getValuePercentage(sortedTasks[0].a, 'a') }} className="bg-violet-400" />
-                  <div style={{ flex: getValuePercentage(sortedTasks[0].d, 'd') }} className="bg-red-400" />
-                  <div style={{ flex: getValuePercentage(sortedTasks[0].e, 'e') }} className="bg-amber-400" />
-                </div>
+                <div className={`relative bg-white rounded-2xl overflow-hidden animate-in slide-in-from-top-2 duration-500 flex transition-all duration-700 ${topTaskHasErrors ? 'ring-2 ring-red-500/50 border-red-200' : 'border border-zinc-100'
+                  } shadow-[0_4px_20px_rgba(0,0,0,0.02)] ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 scale-[0.98] translate-y-2' : ''}`}>
+                  {/* 🧬 Mini DNA Sidebar Accent - Full height */}
+                  <div className="w-1 lg:w-1.5 shrink-0 flex flex-col opacity-40">
+                    <div style={{ flex: getValuePercentage(sortedTasks[0].m, 'm') }} className="bg-emerald-400" />
+                    <div style={{ flex: getValuePercentage(sortedTasks[0].a, 'a') }} className="bg-violet-400" />
+                    <div style={{ flex: getValuePercentage(sortedTasks[0].d, 'd') }} className="bg-red-400" />
+                    <div style={{ flex: getValuePercentage(sortedTasks[0].e, 'e') }} className="bg-amber-400" />
+                  </div>
 
-                <div className="flex-1 relative">
-                  <div className="p-5 lg:p-8 pb-20 lg:pb-16 relative">
-                    <div className={`absolute top-4 lg:top-0 right-4 lg:right-0 p-0 lg:p-6 scale-90 lg:scale-100 transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 scale-50' : ''}`}>
-                      <div className="bg-zinc-900 text-white px-3 lg:px-4 py-2 lg:py-3 rounded-xl flex flex-col items-center justify-center shadow-lg min-w-[60px] lg:min-w-0">
-                        <span className="text-lg lg:text-xl font-black leading-none">{formatScore(sortedTasks[0].score)}</span>
-                        <span className="text-[7px] lg:text-[8px] font-black opacity-40 tracking-widest mt-1 uppercase">MADE</span>
-                      </div>
-                    </div>
-                    
-                    <div className="relative z-10 space-y-4">
-                      <div className={`flex items-center gap-3 transition-all duration-500 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 -translate-x-4' : ''}`}>
-                        <div className="flex items-center gap-2 px-2 lg:px-3 py-1 bg-red-50 border border-red-100 rounded-full shadow-sm">
-                          <span className="relative flex h-1.5 lg:h-2 w-1.5 lg:w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-1.5 lg:h-2 w-1.5 lg:w-2 bg-red-600"></span>
-                          </span>
-                          <span className="text-[8px] lg:text-[10px] font-black text-red-600 uppercase tracking-widest text-nowrap">Critical Mission</span>
+                  <div className="flex-1 relative">
+                    <div className="p-5 lg:p-8 pb-20 lg:pb-16 relative">
+                      <div className={`absolute top-4 lg:top-0 right-4 lg:right-0 p-0 lg:p-6 scale-90 lg:scale-100 transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 scale-50' : ''}`}>
+                        <div className="bg-zinc-900 text-white px-3 lg:px-4 py-2 lg:py-3 rounded-xl flex flex-col items-center justify-center shadow-lg min-w-[60px] lg:min-w-0">
+                          <span className="text-lg lg:text-xl font-black leading-none">{formatScore(sortedTasks[0].score)}</span>
+                          <span className="text-[7px] lg:text-[8px] font-black opacity-40 tracking-widest mt-1 uppercase">MADE</span>
                         </div>
-                        <span className="text-[8px] lg:text-[10px] font-black text-red-500 uppercase tracking-[0.2em] opacity-80 animate-pulse text-nowrap">Execute Now</span>
                       </div>
-                      
-                      <div className="space-y-1 max-w-[calc(100%-80px)] lg:max-w-xl">
-                        <h2 className={`text-xl lg:text-2xl font-black tracking-tight leading-tight break-words pr-4 lg:pr-0 transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'text-emerald-500 line-through opacity-50 translate-x-2' : 'text-zinc-900'}`}>{sortedTasks[0].title}</h2>
-                        {sortedTasks[0].description && (
-                          <p className={`text-xs lg:text-sm font-medium line-clamp-3 lg:line-clamp-2 leading-relaxed transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'text-emerald-300 opacity-30 translate-x-2' : 'text-zinc-400'}`}>
-                            {sortedTasks[0].description}
-                          </p>
-                        )}
-                        {topTaskHasErrors && (
-                          <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-xl mt-2">
-                            <span className="text-[10px] lg:text-xs font-bold text-red-600 uppercase tracking-wider">⚠️ Out of range:</span>
-                            <span className="text-[10px] lg:text-xs font-medium text-red-500">{topTaskErrors.join(', ')}</span>
+
+                      <div className="relative z-10 space-y-4">
+                        <div className={`flex items-center gap-3 transition-all duration-500 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 -translate-x-4' : ''}`}>
+                          <div className="flex items-center gap-2 px-2 lg:px-3 py-1 bg-red-50 border border-red-100 rounded-full shadow-sm">
+                            <span className="relative flex h-1.5 lg:h-2 w-1.5 lg:w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-1.5 lg:h-2 w-1.5 lg:w-2 bg-red-600"></span>
+                            </span>
+                            <span className="text-[8px] lg:text-[10px] font-black text-red-600 uppercase tracking-widest text-nowrap">Critical Mission</span>
                           </div>
-                        )}
-                      </div>
+                          <span className="text-[8px] lg:text-[10px] font-black text-red-500 uppercase tracking-[0.2em] opacity-80 animate-pulse text-nowrap">Execute Now</span>
+                        </div>
 
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 lg:gap-4 pt-2">
-                        <button 
-                          onClick={() => toggleComplete(sortedTasks[0].id, false)}
-                          disabled={completingIds.has(sortedTasks[0].id)}
-                          className={`group flex items-center justify-center gap-2 px-5 lg:px-6 py-3.5 lg:py-3 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 ${completingIds.has(sortedTasks[0].id) ? 'bg-emerald-500 text-white scale-95 shadow-emerald-100' : 'bg-zinc-900 text-white hover:bg-indigo-600'}`}
-                        >
-                          {completingIds.has(sortedTasks[0].id) ? <Check size={16} lg:size={18} className="animate-bounce" /> : <CheckCircle2 size={16} lg:size={18} />}
-                          <span>{completingIds.has(sortedTasks[0].id) ? "Done!" : "Complete Task"}</span>
-                        </button>
-                        <div className={`flex items-center gap-2 justify-center sm:justify-start transition-all duration-500 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 scale-75' : ''}`}>
-                          <button 
-                            onClick={() => startEditing(sortedTasks[0])}
-                            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-zinc-400 hover:text-zinc-900 font-bold text-[11px] lg:text-xs transition-all px-3 py-2.5 lg:py-2 rounded-lg hover:bg-zinc-50"
+                        <div className="space-y-1 max-w-[calc(100%-80px)] lg:max-w-xl">
+                          <h2 className={`text-xl lg:text-2xl font-black tracking-tight leading-tight break-words pr-4 lg:pr-0 transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'text-emerald-500 line-through opacity-50 translate-x-2' : 'text-zinc-900'}`}>{sortedTasks[0].title}</h2>
+                          {sortedTasks[0].description && (
+                            <p className={`text-xs lg:text-sm font-medium line-clamp-3 lg:line-clamp-2 leading-relaxed transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'text-emerald-300 opacity-30 translate-x-2' : 'text-zinc-400'}`}>
+                              {sortedTasks[0].description}
+                            </p>
+                          )}
+                          {topTaskHasErrors && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-xl mt-2">
+                              <span className="text-[10px] lg:text-xs font-bold text-red-600 uppercase tracking-wider">⚠️ Out of range:</span>
+                              <span className="text-[10px] lg:text-xs font-medium text-red-500">{topTaskErrors.join(', ')}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 lg:gap-4 pt-2">
+                          <button
+                            onClick={() => toggleComplete(sortedTasks[0].id, false)}
+                            disabled={completingIds.has(sortedTasks[0].id)}
+                            className={`group flex items-center justify-center gap-2 px-5 lg:px-6 py-3.5 lg:py-3 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 ${completingIds.has(sortedTasks[0].id) ? 'bg-emerald-500 text-white scale-95 shadow-emerald-100' : 'bg-zinc-900 text-white hover:bg-indigo-600'}`}
                           >
-                            <Pencil size={14} />
-                            <span>Edit</span>
+                            {completingIds.has(sortedTasks[0].id) ? <Check size={16} lg:size={18} className="animate-bounce" /> : <CheckCircle2 size={16} lg:size={18} />}
+                            <span>{completingIds.has(sortedTasks[0].id) ? "Done!" : "Complete Task"}</span>
                           </button>
-                          <button 
-                            onClick={() => deleteTask(sortedTasks[0].id)}
-                            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-zinc-400 hover:text-red-600 font-bold text-[11px] lg:text-xs transition-all px-3 py-2.5 lg:py-2 rounded-lg hover:bg-red-50"
-                          >
-                            <Trash2 size={14} />
-                            <span>Delete</span>
-                          </button>
+                          <div className={`flex items-center gap-2 justify-center sm:justify-start transition-all duration-500 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 scale-75' : ''}`}>
+                            <button
+                              onClick={() => startEditing(sortedTasks[0])}
+                              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-zinc-400 hover:text-zinc-900 font-bold text-[11px] lg:text-xs transition-all px-3 py-2.5 lg:py-2 rounded-lg hover:bg-zinc-50"
+                            >
+                              <Pencil size={14} />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              onClick={() => deleteTask(sortedTasks[0].id)}
+                              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-zinc-400 hover:text-red-600 font-bold text-[11px] lg:text-xs transition-all px-3 py-2.5 lg:py-2 rounded-lg hover:bg-red-50"
+                            >
+                              <Trash2 size={14} />
+                              <span>Delete</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 🧬 MADE Bottom Bar: Responsive Grid for mobile */}
+                    <div className={`absolute bottom-0 left-0 right-0 py-2.5 lg:h-10 flex items-center px-5 lg:px-8 bg-zinc-50/80 border-t border-zinc-100/50 transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 translate-y-4' : ''}`}>
+                      <div className="grid grid-cols-2 lg:flex lg:gap-8 w-full gap-y-1.5 gap-x-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[7px] lg:text-[9px] font-black text-emerald-500 uppercase tracking-widest">Money</span>
+                          <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">{sortedTasks[0].m}</span>
+                          <span className="text-[7.5px] lg:text-[9px] font-bold text-zinc-400 truncate">{getLabel(sortedTasks[0].m, config.criteria.m)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[7px] lg:text-[9px] font-black text-violet-500 uppercase tracking-widest">Asset</span>
+                          <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">{sortedTasks[0].a}</span>
+                          <span className="text-[7.5px] lg:text-[9px] font-bold text-zinc-400 truncate">{getLabel(sortedTasks[0].a, config.criteria.a)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[7px] lg:text-[9px] font-black text-red-500 uppercase tracking-widest">Deadline</span>
+                          <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">x{sortedTasks[0].d.toFixed(1)}</span>
+                          <span className="text-[7.5px] lg:text-[9px] font-bold text-zinc-400 truncate">{getLabel(sortedTasks[0].d, config.criteria.d)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[7px] lg:text-[9px] font-black text-amber-500 uppercase tracking-widest">Effort</span>
+                          <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">-{sortedTasks[0].e}</span>
+                          <span className="text-[7.5px] lg:text-[9px] font-bold text-zinc-400 truncate">{getLabel(sortedTasks[0].e, config.criteria.e)}</span>
                         </div>
                       </div>
                     </div>
                   </div>
-
-                  {/* 🧬 MADE Bottom Bar: Responsive Grid for mobile */}
-                  <div className={`absolute bottom-0 left-0 right-0 py-2.5 lg:h-10 flex items-center px-5 lg:px-8 bg-zinc-50/80 border-t border-zinc-100/50 transition-all duration-700 ${completingIds.has(sortedTasks[0].id) ? 'opacity-0 translate-y-4' : ''}`}>
-                    <div className="grid grid-cols-2 lg:flex lg:gap-8 w-full gap-y-1.5 gap-x-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[7px] lg:text-[9px] font-black text-emerald-500 uppercase tracking-widest">Money</span>
-                        <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">{sortedTasks[0].m}</span>
-                        <span className="text-[7.5px] lg:text-[9px] font-bold text-zinc-400 truncate">{getLabel(sortedTasks[0].m, config.criteria.m)}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[7px] lg:text-[9px] font-black text-violet-500 uppercase tracking-widest">Asset</span>
-                        <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">{sortedTasks[0].a}</span>
-                        <span className="text-[7.5px] lg:text-[9px] font-bold text-zinc-400 truncate">{getLabel(sortedTasks[0].a, config.criteria.a)}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[7px] lg:text-[9px] font-black text-red-500 uppercase tracking-widest">Deadline</span>
-                        <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">x{sortedTasks[0].d.toFixed(1)}</span>
-                        <span className="text-[7.5px] lg:text-[9px] font-bold text-zinc-400 truncate">{getLabel(sortedTasks[0].d, config.criteria.d)}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[7px] lg:text-[9px] font-black text-amber-500 uppercase tracking-widest">Effort</span>
-                        <span className="text-[10px] lg:text-[11px] font-black text-zinc-900">-{sortedTasks[0].e}</span>
-                        <span className="text-[7.5px] lg:text-[9px] font-bold text-zinc-400 truncate">{getLabel(sortedTasks[0].e, config.criteria.e)}</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              </div>
               );
             })()}
 
             {/* List Controls */}
             <div className="flex flex-row items-center justify-between gap-4 px-2">
-                <div className="flex items-center gap-1 bg-zinc-100/50 p-1 rounded-xl">
-                    <button 
-                        onClick={() => setActiveTab('queue')}
-                        className={`flex items-center gap-2 px-4 lg:px-5 py-2 rounded-lg text-[11px] lg:text-xs font-bold transition-all ${
-                            activeTab === 'queue' 
-                            ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/50' 
-                            : 'text-zinc-400 hover:text-zinc-600'
-                        }`}
-                    >
-                        <Layers size={12} lg:size={14} />
-                        Queue
-                        <span className={`ml-1 text-[8px] lg:text-[9px] px-1 h-3.5 lg:h-4 min-w-[14px] lg:min-w-[16px] inline-flex items-center justify-center rounded-full leading-none ${activeTab === 'queue' ? 'bg-zinc-900 text-white' : 'bg-zinc-200 text-zinc-500'}`}>
-                            {tasks.filter(t => !t.completed).length}
-                        </span>
-                    </button>
-                    <button 
-                        onClick={() => setActiveTab('history')}
-                        className={`flex items-center gap-2 px-4 lg:px-5 py-2 rounded-lg text-[11px] lg:text-xs font-bold transition-all ${
-                            activeTab === 'history' 
-                            ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/50' 
-                            : 'text-zinc-400 hover:text-zinc-600'
-                        }`}
-                    >
-                        <History size={12} lg:size={14} />
-                        History
-                    </button>
-                </div>
+              <div className="flex items-center gap-1 bg-zinc-100/50 p-1 rounded-xl">
+                <button
+                  onClick={() => setActiveTab('queue')}
+                  className={`flex items-center gap-2 px-4 lg:px-5 py-2 rounded-lg text-[11px] lg:text-xs font-bold transition-all ${activeTab === 'queue'
+                    ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/50'
+                    : 'text-zinc-400 hover:text-zinc-600'
+                    }`}
+                >
+                  <Layers size={12} lg:size={14} />
+                  Queue
+                  <span className={`ml-1 text-[8px] lg:text-[9px] px-1 h-3.5 lg:h-4 min-w-[14px] lg:min-w-[16px] inline-flex items-center justify-center rounded-full leading-none ${activeTab === 'queue' ? 'bg-zinc-900 text-white' : 'bg-zinc-200 text-zinc-500'}`}>
+                    {tasks.filter(t => !t.completed).length}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('history')}
+                  className={`flex items-center gap-2 px-4 lg:px-5 py-2 rounded-lg text-[11px] lg:text-xs font-bold transition-all ${activeTab === 'history'
+                    ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/50'
+                    : 'text-zinc-400 hover:text-zinc-600'
+                    }`}
+                >
+                  <History size={12} lg:size={14} />
+                  History
+                </button>
+              </div>
             </div>
 
             {/* Tasks Rendering */}
@@ -902,146 +894,143 @@ export default function App() {
                   const hasErrors = validationErrors.length > 0;
 
                   return (
-                  <React.Fragment key={task.id}>
-                    {showDateHeader && (
+                    <React.Fragment key={task.id}>
+                      {showDateHeader && (
                         <div className="pt-4 lg:pt-6 pb-2 px-4 flex items-center gap-3">
-                            <h4 className="text-[8px] lg:text-[9px] font-bold text-zinc-400 uppercase tracking-widest">{getRelativeDateLabel(getTaskTimestamp(task))}</h4>
-                            <div className="h-px bg-zinc-100 flex-grow"></div>
+                          <h4 className="text-xs lg:text-sm font-bold text-zinc-400 uppercase tracking-widest">{getRelativeDateLabel(getTaskTimestamp(task))}</h4>
+                          <div className="h-px bg-zinc-100 flex-grow"></div>
                         </div>
-                    )}
+                      )}
 
-                    <div 
-                        className={`group relative bg-white rounded-xl p-0.5 transition-all duration-700 ${
-                        task.completed 
-                          ? 'opacity-60 bg-zinc-50 hover:opacity-100 hover:bg-white hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-200/40 hover:-translate-y-0.5' 
+                      <div
+                        className={`group relative bg-white rounded-xl p-0.5 transition-all duration-700 ${task.completed
+                          ? 'opacity-60 bg-zinc-50 hover:opacity-100 hover:bg-white hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-200/40 hover:-translate-y-0.5'
                           : 'hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-200/40 hover:-translate-y-0.5'
-                        } ${editingId === task.id ? 'ring-2 ring-indigo-500/50' : hasErrors ? 'ring-2 ring-red-500/50 border-red-200' : 'border border-zinc-100'} ${isCompleting ? 'opacity-0 scale-[0.98] translate-x-12' : ''}`}
-                    >
+                          } ${editingId === task.id ? 'ring-2 ring-indigo-500/50' : hasErrors ? 'ring-2 ring-red-500/50 border-red-200' : 'border border-zinc-100'} ${isCompleting ? 'opacity-0 scale-[0.98] translate-x-12' : ''}`}
+                      >
                         <div className="p-4 lg:p-5 pl-5 lg:pl-6">
-                            <div className="flex items-center gap-4 lg:gap-5">
-                              <button 
-                                  onClick={(e) => { e.stopPropagation(); toggleComplete(task.id, task.completed); }}
-                                  disabled={isCompleting}
-                                  className={`flex-shrink-0 transition-all duration-500 ${
-                                  task.completed || isCompleting ? 'text-emerald-500 scale-110' : 'text-zinc-200 hover:text-indigo-500'
-                                  }`}
-                              >
-                                  {task.completed || isCompleting ? <CheckCircle2 size={24} lg:size={26} className={`${isCompleting ? 'animate-bounce' : ''} fill-emerald-50`} /> : <Circle size={24} lg:size={26} strokeWidth={1.5} />}
-                              </button>
+                          <div className="flex items-center gap-4 lg:gap-5">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); toggleComplete(task.id, task.completed); }}
+                              disabled={isCompleting}
+                              className={`flex-shrink-0 transition-all duration-500 ${task.completed || isCompleting ? 'text-emerald-500 scale-110' : 'text-zinc-200 hover:text-indigo-500'
+                                }`}
+                            >
+                              {task.completed || isCompleting ? <CheckCircle2 size={24} lg:size={26} className={`${isCompleting ? 'animate-bounce' : ''} fill-emerald-50`} /> : <Circle size={24} lg:size={26} strokeWidth={1.5} />}
+                            </button>
 
-                              <div className="flex-grow min-w-0">
-                                  <div className="flex justify-between items-center gap-3">
-                                      <div className="space-y-1 min-w-0 flex-1">
-                                          <h3 className={`text-base lg:text-lg font-bold tracking-tight truncate transition-all duration-700 ${
-                                              isCompleting 
-                                                ? 'text-emerald-500 line-through opacity-50 translate-x-2' 
-                                                : task.completed 
-                                                  ? 'text-zinc-900 line-through opacity-70' 
-                                                  : 'text-zinc-900'
-                                          }`}>{task.title}</h3>
-                                          
-                                          {task.description && (
-                                            <p className={`text-[10px] lg:text-xs font-medium line-clamp-1 mb-1 transition-all duration-700 ${
-                                              isCompleting 
-                                                ? 'text-emerald-300 opacity-30 translate-x-2' 
-                                                : task.completed 
-                                                  ? 'text-zinc-900 opacity-50' 
-                                                  : 'text-zinc-400'
-                                            }`}>
-                                              {task.description}
-                                            </p>
-                                          )}
+                            <div className="flex-grow min-w-0">
+                              <div className="flex justify-between items-center gap-3">
+                                <div className="space-y-1 min-w-0 flex-1">
+                                  <h3 className={`text-base lg:text-lg font-bold tracking-tight truncate transition-all duration-700 ${isCompleting
+                                    ? 'text-emerald-500 line-through opacity-50 translate-x-2'
+                                    : task.completed
+                                      ? 'text-zinc-900 line-through opacity-70'
+                                      : 'text-zinc-900'
+                                    }`}>{task.title}</h3>
 
-                                          {hasErrors && (
-                                            <div className="flex items-center gap-2 px-2 py-1 bg-red-50 border border-red-200 rounded-lg mb-1">
-                                              <span className="text-[9px] lg:text-[10px] font-bold text-red-600 uppercase tracking-wider">⚠️ Out of range:</span>
-                                              <span className="text-[9px] lg:text-[10px] font-medium text-red-500">{validationErrors.join(', ')}</span>
-                                            </div>
-                                          )}
+                                  {task.description && (
+                                    <p className={`text-[10px] lg:text-xs font-medium line-clamp-1 mb-1 transition-all duration-700 ${isCompleting
+                                      ? 'text-emerald-300 opacity-30 translate-x-2'
+                                      : task.completed
+                                        ? 'text-zinc-900 opacity-50'
+                                        : 'text-zinc-400'
+                                      }`}>
+                                      {task.description}
+                                    </p>
+                                  )}
 
-                                          <div className={`flex items-center gap-3 lg:gap-4 transition-all duration-700 ${isCompleting ? 'opacity-0 -translate-y-2' : ''}`}>
-                                              <span className="text-[8px] lg:text-[10px] font-bold text-zinc-300 uppercase tracking-widest">{new Date(displayTimestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                                              
-                                              {/* 🧬 Mini DNA Strip: Responsive width */}
-                                              <div className={`flex gap-1 lg:gap-2 items-center h-1 lg:h-1.5 transition-opacity duration-200 ${!task.completed ? 'group-hover:opacity-0' : 'opacity-40 group-hover:opacity-0'}`}>
-                                                <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
-                                                  <div style={{ width: `${getValuePercentage(task.m, 'm')}%` }} className="h-full bg-emerald-400" />
-                                                </div>
-                                                <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
-                                                  <div style={{ width: `${getValuePercentage(task.a, 'a')}%` }} className="h-full bg-violet-400" />
-                                                </div>
-                                                <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
-                                                  <div style={{ width: `${getValuePercentage(task.d, 'd')}%` }} className="h-full bg-red-400" />
-                                                </div>
-                                                <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
-                                                  <div style={{ width: `${getValuePercentage(task.e, 'e')}%` }} className="h-full bg-amber-400" />
-                                                </div>
-                                              </div>
-                                          </div>
+                                  {hasErrors && (
+                                    <div className="flex items-center gap-2 px-2 py-1 bg-red-50 border border-red-200 rounded-lg mb-1">
+                                      <span className="text-[9px] lg:text-[10px] font-bold text-red-600 uppercase tracking-wider">⚠️ Out of range:</span>
+                                      <span className="text-[9px] lg:text-[10px] font-medium text-red-500">{validationErrors.join(', ')}</span>
+                                    </div>
+                                  )}
+
+                                  <div className={`flex items-center gap-3 lg:gap-4 transition-all duration-700 ${isCompleting ? 'opacity-0 -translate-y-2' : ''}`}>
+                                    <span className="text-[8px] lg:text-[10px] font-bold text-zinc-300 uppercase tracking-widest">{new Date(displayTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+
+                                    {/* 🧬 Mini DNA Strip: Responsive width */}
+                                    <div className={`flex gap-1 lg:gap-2 items-center h-1 lg:h-1.5 transition-opacity duration-200 ${!task.completed ? 'group-hover:opacity-0' : 'opacity-40 group-hover:opacity-0'}`}>
+                                      <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
+                                        <div style={{ width: `${getValuePercentage(task.m, 'm')}%` }} className="h-full bg-emerald-400" />
                                       </div>
-                                      
-                                      <div className={`flex items-center gap-3 lg:gap-6 flex-shrink-0 transition-all duration-700 ${isCompleting ? 'opacity-0 scale-50 -translate-x-8' : ''}`}>
-                                          <div className="flex flex-col items-end">
-                                            <span className={`text-2xl lg:text-3xl font-black leading-none tracking-tighter transition-all duration-700 ${isCompleting ? 'text-emerald-500' : 'text-zinc-900'}`}>{formatScore(task.score)}</span>
-                                            <span className="text-[7px] lg:text-[8px] font-black text-zinc-400 uppercase tracking-widest mt-1">PTS</span>
-                                          </div>
-                                          
-                                          <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                                              <button onClick={() => startEditing(task)} className="p-1.5 text-zinc-300 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition-all"><Pencil size={14} /></button>
-                                              <button onClick={() => deleteTask(task.id)} className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={14} /></button>
-                                          </div>
+                                      <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
+                                        <div style={{ width: `${getValuePercentage(task.a, 'a')}%` }} className="h-full bg-violet-400" />
                                       </div>
+                                      <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
+                                        <div style={{ width: `${getValuePercentage(task.d, 'd')}%` }} className="h-full bg-red-400" />
+                                      </div>
+                                      <div className="w-8 lg:w-24 h-0.5 lg:h-1 bg-zinc-50 rounded-full overflow-hidden">
+                                        <div style={{ width: `${getValuePercentage(task.e, 'e')}%` }} className="h-full bg-amber-400" />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className={`flex items-center gap-3 lg:gap-6 flex-shrink-0 transition-all duration-700 ${isCompleting ? 'opacity-0 scale-50 -translate-x-8' : ''}`}>
+                                  <div className="flex flex-col items-end">
+                                    <span className={`text-2xl lg:text-3xl font-black leading-none tracking-tighter transition-all duration-700 ${isCompleting ? 'text-emerald-500' : 'text-zinc-900'}`}>{formatScore(task.score)}</span>
+                                    <span className="text-[7px] lg:text-[8px] font-black text-zinc-400 uppercase tracking-widest mt-1">PTS</span>
                                   </div>
 
-                                  {/* Hover Detail: Expands on hover */}
-                                  <div className={`grid grid-cols-4 gap-2 lg:gap-4 mt-0 pt-0 overflow-hidden h-0 opacity-0 group-hover:h-auto group-hover:opacity-100 group-hover:mt-4 group-hover:pt-4 group-hover:border-t group-hover:border-zinc-50 transition-all duration-300 ease-out ${task.completed ? 'grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100' : ''}`}>
-                                      <div className="flex flex-col">
-                                          <div className="flex justify-between items-baseline">
-                                              <span className="text-[7px] lg:text-[9px] font-black text-emerald-500 uppercase tracking-widest">Money</span>
-                                              <span className="text-[9px] lg:text-xs font-black text-zinc-900">{task.m}</span>
-                                          </div>
-                                          <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
-                                              <div style={{ width: `${getValuePercentage(task.m, 'm')}%` }} className="h-full bg-emerald-400" />
-                                          </div>
-                                          <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.m, config.criteria.m)}</span>
-                                      </div>
-                                      <div className="flex flex-col">
-                                          <div className="flex justify-between items-baseline">
-                                              <span className="text-[7px] lg:text-[9px] font-black text-violet-500 uppercase tracking-widest">Asset</span>
-                                              <span className="text-[9px] lg:text-xs font-black text-zinc-900">{task.a}</span>
-                                          </div>
-                                          <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
-                                              <div style={{ width: `${getValuePercentage(task.a, 'a')}%` }} className="h-full bg-violet-400" />
-                                          </div>
-                                          <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.a, config.criteria.a)}</span>
-                                      </div>
-                                      <div className="flex flex-col">
-                                          <div className="flex justify-between items-baseline">
-                                              <span className="text-[7px] lg:text-[9px] font-black text-red-500 uppercase tracking-widest">Deadline</span>
-                                              <span className="text-[9px] lg:text-xs font-black text-zinc-900">x{task.d.toFixed(1)}</span>
-                                          </div>
-                                          <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
-                                              <div style={{ width: `${getValuePercentage(task.d, 'd')}%` }} className="h-full bg-red-400" />
-                                          </div>
-                                          <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.d, config.criteria.d)}</span>
-                                      </div>
-                                      <div className="flex flex-col">
-                                          <div className="flex justify-between items-baseline">
-                                              <span className="text-[7px] lg:text-[9px] font-black text-amber-500 uppercase tracking-widest">Effort</span>
-                                              <span className="text-[9px] lg:text-xs font-black text-zinc-900">-{task.e}</span>
-                                          </div>
-                                          <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
-                                              <div style={{ width: `${getValuePercentage(task.e, 'e')}%` }} className="h-full bg-amber-400" />
-                                          </div>
-                                          <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.e, config.criteria.e)}</span>
-                                      </div>
+                                  <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                    <button onClick={() => startEditing(task)} className="p-1.5 text-zinc-300 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition-all"><Pencil size={14} /></button>
+                                    <button onClick={() => deleteTask(task.id)} className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={14} /></button>
                                   </div>
+                                </div>
+                              </div>
+
+                              {/* Hover Detail: Expands on hover */}
+                              <div className={`grid grid-cols-4 gap-2 lg:gap-4 mt-0 pt-0 overflow-hidden h-0 opacity-0 group-hover:h-auto group-hover:opacity-100 group-hover:mt-4 group-hover:pt-4 group-hover:border-t group-hover:border-zinc-50 transition-all duration-300 ease-out ${task.completed ? 'grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100' : ''}`}>
+                                <div className="flex flex-col">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[7px] lg:text-[9px] font-black text-emerald-500 uppercase tracking-widest">Money</span>
+                                    <span className="text-[9px] lg:text-xs font-black text-zinc-900">{task.m}</span>
+                                  </div>
+                                  <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
+                                    <div style={{ width: `${getValuePercentage(task.m, 'm')}%` }} className="h-full bg-emerald-400" />
+                                  </div>
+                                  <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.m, config.criteria.m)}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[7px] lg:text-[9px] font-black text-violet-500 uppercase tracking-widest">Asset</span>
+                                    <span className="text-[9px] lg:text-xs font-black text-zinc-900">{task.a}</span>
+                                  </div>
+                                  <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
+                                    <div style={{ width: `${getValuePercentage(task.a, 'a')}%` }} className="h-full bg-violet-400" />
+                                  </div>
+                                  <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.a, config.criteria.a)}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[7px] lg:text-[9px] font-black text-red-500 uppercase tracking-widest">Deadline</span>
+                                    <span className="text-[9px] lg:text-xs font-black text-zinc-900">x{task.d.toFixed(1)}</span>
+                                  </div>
+                                  <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
+                                    <div style={{ width: `${getValuePercentage(task.d, 'd')}%` }} className="h-full bg-red-400" />
+                                  </div>
+                                  <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.d, config.criteria.d)}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[7px] lg:text-[9px] font-black text-amber-500 uppercase tracking-widest">Effort</span>
+                                    <span className="text-[9px] lg:text-xs font-black text-zinc-900">-{task.e}</span>
+                                  </div>
+                                  <div className="w-full h-1 lg:h-1.5 bg-zinc-50 rounded-full overflow-hidden mt-1 lg:mt-1.5">
+                                    <div style={{ width: `${getValuePercentage(task.e, 'e')}%` }} className="h-full bg-amber-400" />
+                                  </div>
+                                  <span className="text-[8px] lg:text-[10px] font-bold text-zinc-400 mt-1 lg:mt-1.5 truncate">{getLabel(task.e, config.criteria.e)}</span>
+                                </div>
                               </div>
                             </div>
+                          </div>
                         </div>
-                    </div>
-                  </React.Fragment>
-                )})}
+                      </div>
+                    </React.Fragment>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -1050,14 +1039,14 @@ export default function App() {
 
       {/* Toast Notification */}
       {toast && (
-          <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 px-6 py-4 bg-zinc-900 text-white rounded-3xl shadow-2xl shadow-zinc-900/40 animate-in slide-in-from-bottom-5 fade-in duration-300">
-              <span className="text-sm font-bold tracking-tight">{toast.message}</span>
-              {toast.action && (
-                  <button onClick={toast.action.onClick} className="text-xs font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-widest flex items-center gap-2 border-l border-zinc-700 pl-4">
-                      <Undo2 size={14} /> {toast.action.label}
-                  </button>
-              )}
-          </div>
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 px-6 py-4 bg-zinc-900 text-white rounded-3xl shadow-2xl shadow-zinc-900/40 animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <span className="text-sm font-bold tracking-tight">{toast.message}</span>
+          {toast.action && (
+            <button onClick={toast.action.onClick} className="text-xs font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-widest flex items-center gap-2 border-l border-zinc-700 pl-4">
+              <Undo2 size={14} /> {toast.action.label}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
