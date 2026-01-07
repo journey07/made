@@ -194,16 +194,18 @@ export default function App() {
           setConfig(sanitizeConfig(data.config));
           setSyncStatus('synced');
         } else {
-          // 새 복구 코드 → DB에 현재 로컬 상태 저장
-          const { error: insertError } = await supabase
-            .from('planner_data')
-            .insert({
-              recovery_code: code,
-              tasks: tasksRef.current,
-              config: configRef.current,
-            });
+          // 새 복구 코드 → tasks가 있을 때만 DB에 저장 (빈 레코드 방지)
+          if (tasksRef.current.length > 0) {
+            const { error: insertError } = await supabase
+              .from('planner_data')
+              .insert({
+                recovery_code: code,
+                tasks: tasksRef.current,
+                config: configRef.current,
+              });
 
-          if (insertError) throw insertError;
+            if (insertError) throw insertError;
+          }
           setSyncStatus('synced');
         }
       } catch (err) {
