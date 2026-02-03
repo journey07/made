@@ -4,12 +4,14 @@ export interface Task {
   description?: string;
   m: number; // Money
   a: number; // Asset
-  d: number; // Deadline
+  d: number; // Deadline (calculated or manual)
   e: number; // Effort
   score: number;
   completed: boolean;
   createdAt: number;
   completedAt?: number;
+  deadline?: string;    // ISO date string (선택) - 있으면 D값 자동 계산
+  originalD?: number;   // deadline 없을 때 수동 D값 보존용
 }
 
 export interface ReferenceItem {

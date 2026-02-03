@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Plus, Trash2, CheckCircle2, Circle, Settings, BarChart2, Pencil, X, Command, ArrowUpRight, History, Layers, Clock, AlignLeft, Undo2, Cloud, CloudOff, RefreshCw, Copy, Check } from 'lucide-react';
 import { Task, AppConfig } from './types';
-import { calculateMadeSScore, formatScore, getDescription, getLabel, getRelativeDateLabel, DEFAULT_CONFIG, extractValuesFromCriteria } from './utils';
+import { calculateMadeSScore, formatScore, getDescription, getLabel, getRelativeDateLabel, DEFAULT_CONFIG, extractValuesFromCriteria, calculateDFromDeadline, getEffectiveD, getDdayLabel } from './utils';
 import { SliderInput } from './components/SliderInput';
 import { SettingsPanel } from './components/SettingsPanel';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
@@ -53,6 +53,9 @@ const sanitizeTasks = (rawTasks: any): Task[] => {
       typeof t?.completedAt === 'number'
         ? t.completedAt
         : (t?.completed ? (typeof t?.createdAt === 'number' ? t.createdAt : Date.now()) : undefined),
+    // 신규 필드 (선택적)
+    deadline: typeof t?.deadline === 'string' ? t.deadline : undefined,
+    originalD: typeof t?.originalD === 'number' ? t.originalD : undefined,
   }));
 };
 
@@ -114,6 +117,7 @@ export default function App() {
   const [a, setA] = useState(() => config.defaultValues.a ?? DEFAULT_CONFIG.defaultValues.a);
   const [d, setD] = useState(() => config.defaultValues.d ?? DEFAULT_CONFIG.defaultValues.d);
   const [e, setE] = useState(() => config.defaultValues.e ?? DEFAULT_CONFIG.defaultValues.e);
+  const [deadline, setDeadline] = useState<string>(''); // ISO date string for deadline
 
   // UI State
   const [showSettings, setShowSettings] = useState(false);
@@ -133,10 +137,14 @@ export default function App() {
 
   // Config 변경 시 모든 task의 점수 재계산
   useEffect(() => {
-    setTasks(prev => prev.map(task => ({
-      ...task,
-      score: calculateMadeSScore(task.m, task.a, task.d, task.e, config.weights)
-    })));
+    setTasks(prev => prev.map(task => {
+      // deadline이 있는 미완료 task는 동적 D값으로 계산
+      const effectiveD = getEffectiveD(task);
+      return {
+        ...task,
+        score: calculateMadeSScore(task.m, task.a, effectiveD, task.e, config.weights)
+      };
+    }));
   }, [config.weights]);
 
   // LocalStorage persistence (fallback)
@@ -332,7 +340,16 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [title]);
 
-  const currentScore = useMemo(() => calculateMadeSScore(m, a, d, e, config.weights), [m, a, d, e, config.weights]);
+  // deadline이 있으면 동적 D값 사용, 없으면 수동 d값 사용
+  const effectiveFormD = useMemo(() => {
+    if (deadline) {
+      const { d: calculatedD } = calculateDFromDeadline(deadline);
+      return calculatedD;
+    }
+    return d;
+  }, [deadline, d]);
+
+  const currentScore = useMemo(() => calculateMadeSScore(m, a, effectiveFormD, e, config.weights), [m, a, effectiveFormD, e, config.weights]);
 
   const showToast = (message: string, type: 'success' | 'info' = 'success', action?: { label: string; onClick: () => void }) => {
     setToast({ message, type, action });
@@ -347,10 +364,24 @@ export default function App() {
     event.preventDefault();
     if (!title.trim()) return;
 
+    // deadline 있으면 D값 자동 계산, 없으면 수동 d값 사용
+    const finalD = deadline ? calculateDFromDeadline(deadline).d : d;
+
     if (editingId) {
       setTasks(prev => prev.map(t => {
         if (t.id === editingId) {
-          return { ...t, title, description, m, a, d, e, score: currentScore };
+          return {
+            ...t,
+            title,
+            description,
+            m,
+            a,
+            d: finalD,
+            e,
+            score: currentScore,
+            deadline: deadline || undefined,
+            originalD: deadline ? undefined : d, // deadline 없을 때만 수동 D값 저장
+          };
         }
         return t;
       }));
@@ -359,11 +390,18 @@ export default function App() {
     } else {
       const newTask: Task = {
         id: generateId(),
-        title, description, m, a, d, e,
+        title,
+        description,
+        m,
+        a,
+        d: finalD,
+        e,
         score: currentScore,
         completed: false,
         createdAt: Date.now(),
         completedAt: undefined,
+        deadline: deadline || undefined,
+        originalD: deadline ? undefined : d,
       };
       setTasks(prev => [...prev, newTask]);
       showToast("Task added to queue");
@@ -378,8 +416,9 @@ export default function App() {
     setDescription(task.description || '');
     setM(task.m);
     setA(task.a);
-    setD(task.d);
+    setD(task.originalD ?? task.d); // originalD가 있으면 수동 값, 없으면 저장된 d값
     setE(task.e);
+    setDeadline(task.deadline || '');
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
@@ -399,6 +438,7 @@ export default function App() {
     setA(config.defaultValues.a ?? DEFAULT_CONFIG.defaultValues.a);
     setD(config.defaultValues.d ?? DEFAULT_CONFIG.defaultValues.d);
     setE(config.defaultValues.e ?? DEFAULT_CONFIG.defaultValues.e);
+    setDeadline('');
   };
 
   const toggleComplete = (id: string, currentStatus: boolean) => {
@@ -407,7 +447,18 @@ export default function App() {
       setTimeout(() => {
         setTasks(prev => prev.map(t => {
           if (t.id !== id) return t;
-          return { ...t, completed: true, completedAt: Date.now() };
+
+          // 완료 시점의 D값 고정 (deadline 있으면 현재 계산된 값, 없으면 저장된 값)
+          const finalD = getEffectiveD(t);
+          const finalScore = calculateMadeSScore(t.m, t.a, finalD, t.e, config.weights);
+
+          return {
+            ...t,
+            completed: true,
+            completedAt: Date.now(),
+            d: finalD,         // 완료 시점의 D값 고정
+            score: finalScore, // 완료 시점의 점수 고정
+          };
         }));
         setCompletingIds(prev => {
           const next = new Set(prev);
@@ -477,13 +528,31 @@ export default function App() {
       ? tasks.filter(t => !t.completed)
       : tasks.filter(t => t.completed);
 
-    return list.sort((a, b) => {
+    // 미완료 task는 deadline 기반 D값 동적 재계산
+    const tasksWithUpdatedScore = list.map(task => {
+      if (task.completed) {
+        // 완료된 task는 그대로
+        return task;
+      }
+
+      // deadline이 있으면 D값 동적 계산
+      const effectiveD = getEffectiveD(task);
+      const updatedScore = calculateMadeSScore(task.m, task.a, effectiveD, task.e, config.weights);
+
+      return {
+        ...task,
+        d: effectiveD, // 화면 표시용 D값 업데이트
+        score: updatedScore,
+      };
+    });
+
+    return tasksWithUpdatedScore.sort((a, b) => {
       if (activeTab === 'history') {
         return getTaskTimestamp(b) - getTaskTimestamp(a);
       }
       return b.score - a.score;
     });
-  }, [tasks, activeTab]);
+  }, [tasks, activeTab, config.weights]);
 
   // Sync 상태 표시
   const getSyncStatusDisplay = () => {
@@ -676,26 +745,85 @@ export default function App() {
                     onChange={setA}
                     subLabel={getDescription(a, config.criteria.a)}
                   />
-                  <div className="grid grid-cols-2 gap-4 lg:gap-6">
-                    <SliderInput
-                      label="Deadline"
-                      value={d}
-                      values={config.ranges.d.values}
-                      accentColor="text-red-500"
-                      textColor="text-red-600"
-                      onChange={setD}
-                      subLabel={getDescription(parseFloat(d.toFixed(1)), config.criteria.d)}
-                    />
-                    <SliderInput
-                      label="Effort"
-                      value={e}
-                      values={[...config.ranges.e.values].reverse()}
-                      accentColor="text-amber-500"
-                      textColor="text-amber-600"
-                      onChange={setE}
-                      subLabel={getDescription(e, config.criteria.e)}
-                    />
+
+                  {/* Deadline Section - 날짜 선택 또는 수동 슬라이더 */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] lg:text-[10px] font-black text-zinc-400 uppercase tracking-widest">Deadline</span>
+                      {deadline && (
+                        <button
+                          type="button"
+                          onClick={() => setDeadline('')}
+                          className="text-[9px] font-bold text-zinc-400 hover:text-red-500 transition-colors"
+                        >
+                          Clear Date
+                        </button>
+                      )}
+                    </div>
+
+                    {/* 날짜 선택기 */}
+                    <div className="flex items-center gap-3">
+                      <div className="relative flex-1 group/date">
+                        <input
+                          type="date"
+                          value={deadline}
+                          onChange={(e) => setDeadline(e.target.value)}
+                          className="w-full px-4 py-3 bg-zinc-50 border border-zinc-100 rounded-xl text-sm font-bold text-transparent focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:bg-white transition-all duration-200 cursor-pointer hover:bg-zinc-100 hover:border-zinc-200 hover:shadow-sm active:scale-[0.98] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                          min={new Date().toISOString().split('T')[0]}
+                        />
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold pointer-events-none transition-all duration-200 group-hover/date:text-zinc-600">
+                          {deadline ? (
+                            <span className="text-zinc-900">{new Date(deadline + 'T00:00:00').toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}</span>
+                          ) : (
+                            <span className="text-zinc-300 group-hover/date:text-zinc-400">마감일 설정</span>
+                          )}
+                        </span>
+                      </div>
+
+                      {/* 자동 계산된 D값 표시 */}
+                      {deadline && (() => {
+                        const { d: calcD, label } = calculateDFromDeadline(deadline);
+                        return (
+                          <div className="flex items-center gap-2 px-3 py-2.5 bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 rounded-xl shadow-sm">
+                            <span className="text-lg font-black text-red-600">{getDdayLabel(deadline)}</span>
+                            <div className="flex flex-col items-end">
+                              <span className="text-[10px] font-bold text-red-500">x{calcD.toFixed(1)}</span>
+                              <span className="text-[8px] font-bold text-red-400">{label}</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* deadline 없을 때만 수동 슬라이더 표시 */}
+                    {!deadline && (
+                      <div className="pt-2">
+                        <SliderInput
+                          label=""
+                          value={d}
+                          values={config.ranges.d.values}
+                          accentColor="text-red-500"
+                          textColor="text-red-600"
+                          onChange={setD}
+                          subLabel={getDescription(parseFloat(d.toFixed(1)), config.criteria.d)}
+                        />
+                        <p className="text-[9px] font-medium text-zinc-400 mt-2">
+                          Or set a specific date above for automatic D calculation
+                        </p>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Effort */}
+                  <SliderInput
+                    label="Effort"
+                    value={e}
+                    values={[...config.ranges.e.values].reverse()}
+                    accentColor="text-amber-500"
+                    textColor="text-amber-600"
+                    onChange={setE}
+                    subLabel={getDescription(e, config.criteria.e)}
+                  />
                 </div>
 
                 <div className="pt-4 lg:pt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 lg:gap-6 border-t border-zinc-50 mt-4">
@@ -762,7 +890,14 @@ export default function App() {
                             </span>
                             <span className="text-[8px] lg:text-[10px] font-black text-red-600 uppercase tracking-widest text-nowrap">Critical Mission</span>
                           </div>
-                          <span className="text-[8px] lg:text-[10px] font-black text-red-500 uppercase tracking-[0.2em] opacity-80 animate-pulse text-nowrap">Execute Now</span>
+                          {/* deadline이 있으면 D-day 표시 */}
+                          {sortedTasks[0].deadline ? (
+                            <span className="text-[10px] lg:text-xs font-black text-red-600 bg-red-100 px-2 py-0.5 rounded-full">
+                              {getDdayLabel(sortedTasks[0].deadline)}
+                            </span>
+                          ) : (
+                            <span className="text-[8px] lg:text-[10px] font-black text-red-500 uppercase tracking-[0.2em] opacity-80 animate-pulse text-nowrap">Execute Now</span>
+                          )}
                         </div>
 
                         <div className="space-y-1 max-w-[calc(100%-80px)] lg:max-w-xl">
@@ -951,6 +1086,13 @@ export default function App() {
 
                                   <div className={`flex items-center gap-3 lg:gap-4 transition-all duration-700 ${isCompleting ? 'opacity-0 -translate-y-2' : ''}`}>
                                     <span className="text-[8px] lg:text-[10px] font-bold text-zinc-300 uppercase tracking-widest">{new Date(displayTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+
+                                    {/* deadline D-day 표시 */}
+                                    {task.deadline && !task.completed && (
+                                      <span className="text-[9px] lg:text-[10px] font-black text-red-500 bg-red-50 px-1.5 py-0.5 rounded">
+                                        {getDdayLabel(task.deadline)}
+                                      </span>
+                                    )}
 
                                     {/* 🧬 Mini DNA Strip: Responsive width */}
                                     <div className={`flex gap-1 lg:gap-2 items-center h-1 lg:h-1.5 transition-opacity duration-200 ${!task.completed ? 'group-hover:opacity-0' : 'opacity-40 group-hover:opacity-0'}`}>

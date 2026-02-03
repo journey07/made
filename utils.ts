@@ -1,5 +1,66 @@
 import { Task, ReferenceItem, AppConfig } from './types';
 
+// D값 동적 계산을 위한 매핑 테이블
+export const DEADLINE_D_MAPPING: { maxDays: number; d: number; label: string }[] = [
+  { maxDays: -1, d: 3.0, label: '마감 지남' },      // 이미 지남
+  { maxDays: 0, d: 2.7, label: '오늘 마감' },       // 오늘
+  { maxDays: 1, d: 2.3, label: '내일 마감' },       // 내일
+  { maxDays: 2, d: 2.0, label: '2일 내 마감' },     // 2일
+  { maxDays: 3, d: 1.8, label: '3일 내 마감' },     // 3일
+  { maxDays: 7, d: 1.6, label: '이번 주 마감' },    // 4-7일
+  { maxDays: 14, d: 1.4, label: '차주 마감' },      // 8-14일
+  { maxDays: Infinity, d: 1.2, label: '2주 이상 여유' }, // 15일+
+];
+
+// deadline(ISO string)에서 D값 계산
+export const calculateDFromDeadline = (deadline: string): { d: number; label: string; daysLeft: number } => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // 명시적으로 로컬 타임존으로 파싱 (타임존 버그 방지)
+  const [year, month, day] = deadline.split('-').map(Number);
+  const deadlineDate = new Date(year, month - 1, day); // month is 0-indexed
+
+  const diffTime = deadlineDate.getTime() - today.getTime();
+  const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  // 매핑 테이블에서 해당하는 값 찾기
+  for (const mapping of DEADLINE_D_MAPPING) {
+    if (daysLeft <= mapping.maxDays) {
+      return { d: mapping.d, label: mapping.label, daysLeft };
+    }
+  }
+
+  // fallback (shouldn't reach here)
+  return { d: 1.2, label: '여유 있음', daysLeft };
+};
+
+// Task의 effective D값 가져오기 (deadline 있으면 동적 계산, 없으면 수동 값)
+export const getEffectiveD = (task: Task): number => {
+  // 완료된 task는 저장된 D값 그대로 사용
+  if (task.completed) {
+    return task.d;
+  }
+
+  // deadline이 있으면 동적으로 D값 계산
+  if (task.deadline) {
+    const { d } = calculateDFromDeadline(task.deadline);
+    return d;
+  }
+
+  // deadline 없으면 수동 설정된 d값 사용
+  return task.d;
+};
+
+// D-day 라벨 생성 (예: "D-3", "D-Day", "D+2")
+export const getDdayLabel = (deadline: string): string => {
+  const { daysLeft } = calculateDFromDeadline(deadline);
+
+  if (daysLeft < 0) return `D+${Math.abs(daysLeft)}`;
+  if (daysLeft === 0) return 'D-Day';
+  return `D-${daysLeft}`;
+};
+
 export const calculateMadeSScore = (m: number, a: number, d: number, e: number, weights: {m: number, a: number}): number => {
   // Formula: ((WeightM * M + WeightA * A) × D − E) × 10
   const weightedValue = (weights.m * m) + (weights.a * a);
@@ -114,15 +175,18 @@ export const DEFAULT_A_CRITERIA: ReferenceItem[] = [
 ];
 
 export const DEFAULT_D_CRITERIA: ReferenceItem[] = [
-  { range: '2.0', label: '오늘 마감', description: '오늘 못하면 큰 손실 발생 (Critical)' },
-  { range: '1.9', label: '긴급 대응', description: '서버 장애 등 즉시 해결 필요' },
-  { range: '1.8', label: '내일 마감', description: '내일 오전까지 완료 필요' },
-  { range: '1.7', label: '3일 내 마감', description: '이번 주 핵심 마일스톤' },
-  { range: '1.6', label: '이번 주 중요', description: '금주 내 반드시 완료해야 함' },
+  // 자동 계산용 (deadline 설정 시)
+  { range: '3.0', label: '마감 지남', description: '이미 마감일이 지난 긴급 업무' },
+  { range: '2.7', label: '오늘 마감', description: '오늘 내로 반드시 완료 (Critical)' },
+  { range: '2.3', label: '내일 마감', description: '내일까지 완료 필요' },
+  { range: '2.0', label: '2일 내', description: '2일 내 완료 필요' },
+  { range: '1.8', label: '3일 내', description: '3일 내 완료 필요' },
+  { range: '1.6', label: '이번 주', description: '이번 주 내 완료 (4-7일)' },
+  { range: '1.4', label: '차주', description: '다음 주까지 여유 (8-14일)' },
+  { range: '1.2', label: '2주 이상', description: '15일 이상 여유 있음' },
+  // 수동 설정용 (deadline 미설정 시)
   { range: '1.5', label: '주간 업무', description: '이번 주 통상 업무 스케줄' },
-  { range: '1.4', label: '차주 마감', description: '다음 주 초까지 여유 있음' },
   { range: '1.3', label: '일정 조율 중', description: '구체적 날짜는 없으나 곧 정해짐' },
-  { range: '1.2', label: '심리적 압박', description: '마감은 없지만 계속 신경 쓰임' },
   { range: '1.1', label: '구상 단계', description: '아이디어 정리 및 기획 초기' },
   { range: '1.0', label: '무기한', description: '언제 해도 상관없는 장기 과제' },
 ];
