@@ -125,6 +125,10 @@ export default function App() {
   const [toast, setToast] = useState<ToastState>(null);
   const [showSignature, setShowSignature] = useState(false);
 
+  // 날짜 변경 감지용 (D-day 동적 업데이트)
+  const [currentDate, setCurrentDate] = useState(() => new Date().toDateString());
+  const currentDateRef = useRef(currentDate);
+
   const formRef = useRef<HTMLDivElement>(null);
   const deletedTaskRef = useRef<Task | null>(null);
   const signatureTimerRef = useRef<number | null>(null);
@@ -135,17 +139,81 @@ export default function App() {
   useEffect(() => { tasksRef.current = tasks; }, [tasks]);
   useEffect(() => { configRef.current = config; }, [config]);
 
-  // Config 변경 시 모든 task의 점수 재계산
+  // Config 변경 시 또는 날짜 변경 시 모든 task의 D값/점수 재계산
   useEffect(() => {
-    setTasks(prev => prev.map(task => {
-      // deadline이 있는 미완료 task는 동적 D값으로 계산
-      const effectiveD = getEffectiveD(task);
-      return {
-        ...task,
-        score: calculateMadeSScore(task.m, task.a, effectiveD, task.e, config.weights)
-      };
-    }));
-  }, [config.weights]);
+    setTasks(prev => {
+      let hasChanges = false;
+      const updated = prev.map(task => {
+        const effectiveD = getEffectiveD(task);
+        const newD = task.deadline && !task.completed ? effectiveD : task.d;
+        const newScore = calculateMadeSScore(task.m, task.a, effectiveD, task.e, config.weights);
+
+        // 실제 변경이 있는 경우에만 새 객체 생성
+        if (task.d !== newD || task.score !== newScore) {
+          hasChanges = true;
+          return { ...task, d: newD, score: newScore };
+        }
+        return task;
+      });
+
+      // 변경이 없으면 이전 상태 그대로 반환 (불필요한 리렌더링 방지)
+      return hasChanges ? updated : prev;
+    });
+  }, [config.weights, currentDate]);
+
+  // 날짜 변경 감지 (자정마다 D값/score 자동 재계산)
+  useEffect(() => {
+    const checkDateChange = () => {
+      const today = new Date().toDateString();
+      if (today !== currentDateRef.current) {
+        currentDateRef.current = today;
+        setCurrentDate(today);
+      }
+    };
+
+    // 1분마다 체크 (자정 감지)
+    const interval = setInterval(checkDateChange, 60000);
+
+    // 앱 포커스 시에도 체크 (탭 전환 후 복귀 시)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkDateChange();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []); // 마운트 시 1회만 설정 (ref로 현재 날짜 추적)
+
+  // 앱 초기 로드 완료 후 D값/score 재계산 (DB에서 로드된 데이터 업데이트)
+  useEffect(() => {
+    if (!isInitialLoad && tasksRef.current.length > 0) {
+      // 초기 로드 완료 시 한 번만 실행
+      const currentTasks = tasksRef.current;
+      const weights = configRef.current.weights;
+      const needsUpdate = currentTasks.some(task =>
+        task.deadline && !task.completed
+      );
+
+      if (needsUpdate) {
+        setTasks(prev => prev.map(task => {
+          if (task.deadline && !task.completed) {
+            const effectiveD = getEffectiveD(task);
+            return {
+              ...task,
+              d: effectiveD,
+              score: calculateMadeSScore(task.m, task.a, effectiveD, task.e, weights)
+            };
+          }
+          return task;
+        }));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInitialLoad]); // 의도적으로 isInitialLoad만 감시 (초기 로드 시 1회만 실행)
 
   // LocalStorage persistence (fallback)
   useEffect(() => {
@@ -528,31 +596,14 @@ export default function App() {
       ? tasks.filter(t => !t.completed)
       : tasks.filter(t => t.completed);
 
-    // 미완료 task는 deadline 기반 D값 동적 재계산
-    const tasksWithUpdatedScore = list.map(task => {
-      if (task.completed) {
-        // 완료된 task는 그대로
-        return task;
-      }
-
-      // deadline이 있으면 D값 동적 계산
-      const effectiveD = getEffectiveD(task);
-      const updatedScore = calculateMadeSScore(task.m, task.a, effectiveD, task.e, config.weights);
-
-      return {
-        ...task,
-        d: effectiveD, // 화면 표시용 D값 업데이트
-        score: updatedScore,
-      };
-    });
-
-    return tasksWithUpdatedScore.sort((a, b) => {
+    // useEffect에서 이미 D값/score가 업데이트되어 있으므로 추가 계산 불필요
+    return list.sort((a, b) => {
       if (activeTab === 'history') {
         return getTaskTimestamp(b) - getTaskTimestamp(a);
       }
       return b.score - a.score;
     });
-  }, [tasks, activeTab, config.weights]);
+  }, [tasks, activeTab]);
 
   // Sync 상태 표시
   const getSyncStatusDisplay = () => {
